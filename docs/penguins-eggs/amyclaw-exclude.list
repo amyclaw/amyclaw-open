@@ -1,0 +1,66 @@
+# AmyClaw / OpenClaw 打包排除列表
+# 复制到 /etc/penguins-eggs.d/exclude.list.d/ 后由 eggs 合并到 exclude.list
+# 路径相对于系统根 /
+
+# 备份输出目录：不把备份本身打进镜像
+mnt/backup
+mnt/backup/*
+
+# ========== /mnt/disk/amyclaw 内排除 ==========
+# OpenClaw：未编译源码与开发/个人用
+mnt/disk/amyclaw/openclaw/.git
+mnt/disk/amyclaw/openclaw/.git/*
+mnt/disk/amyclaw/openclaw/.agent
+mnt/disk/amyclaw/openclaw/.agents
+mnt/disk/amyclaw/openclaw/.github
+mnt/disk/amyclaw/openclaw/.github/*
+mnt/disk/amyclaw/openclaw/src
+mnt/disk/amyclaw/openclaw/src/*
+mnt/disk/amyclaw/openclaw/docs
+mnt/disk/amyclaw/openclaw/docs/*
+mnt/disk/amyclaw/openclaw/apps
+mnt/disk/amyclaw/openclaw/apps/*
+mnt/disk/amyclaw/openclaw/changelog
+mnt/disk/amyclaw/openclaw/changelog/*
+mnt/disk/amyclaw/openclaw/node_modules
+mnt/disk/amyclaw/openclaw/node_modules/*
+mnt/disk/amyclaw/openclaw/*.test.*
+mnt/disk/amyclaw/openclaw/.detect-secrets.cfg
+mnt/disk/amyclaw/openclaw/.dockerignore
+mnt/disk/amyclaw/openclaw/.env.example
+mnt/disk/amyclaw/openclaw/.jscpd.json
+mnt/disk/amyclaw/openclaw/.mailmap
+mnt/disk/amyclaw/openclaw/.markdownlint-cli2.jsonc
+mnt/disk/amyclaw/openclaw/.npmignore
+mnt/disk/amyclaw/openclaw/knip.config.ts
+mnt/disk/amyclaw/openclaw/docker-compose.yml
+mnt/disk/amyclaw/openclaw/Dockerfile*
+mnt/disk/amyclaw/openclaw/docker-setup.sh
+mnt/disk/amyclaw/openclaw/fly.private.toml
+mnt/disk/amyclaw/openclaw/fly.toml
+mnt/disk/amyclaw/openclaw/vitest.*.mjs
+mnt/disk/amyclaw/openclaw/AGENTS.md
+mnt/disk/amyclaw/openclaw/CLAUDE.md
+mnt/disk/amyclaw/openclaw/appcast.xml
+mnt/disk/amyclaw/openclaw/CONTRIBUTING.md
+mnt/disk/amyclaw/openclaw/docs.acp.md
+mnt/disk/amyclaw/openclaw/git-hooks
+mnt/disk/amyclaw/openclaw/git-hooks/*
+
+# 管理端：敏感与临时（保留 server.js、public、wecom-bridge、scripts、package.json）
+mnt/disk/amyclaw/openclaw-management/data
+mnt/disk/amyclaw/openclaw-management/data/*
+mnt/disk/amyclaw/openclaw-management/.env
+mnt/disk/amyclaw/openclaw-management/.env.local
+mnt/disk/amyclaw/openclaw-management/*.log
+mnt/disk/amyclaw/openclaw-management/node_modules
+mnt/disk/amyclaw/openclaw-management/node_modules/*
+mnt/disk/amyclaw/openclaw-management/.git
+mnt/disk/amyclaw/openclaw-management/.git/*
+
+# 根用户 OpenClaw 状态（Token、API Key 等敏感）
+root/.openclaw
+root/.openclaw/*
+
+# 请勿排除 etc/resolv.conf：否则镜像内可能无 DNS 解析配置（详见 resolv-镜像说明.md）
+# 若 eggs 默认 exclude.list 含 resolv，请在 master 或合并模板中删除对应行。

@@ -1,0 +1,19 @@
+Access token created
+Your access token: "amyclaw_u22-123"
+Record this token somewhere secure, it can't be viewed or retrieved once you close this window.
+
+ATCTT3xFfGN0VJPQwzx239vzR1nYdhjMe88pVI-rHEgUg_PtqNX9Ibo02I1IyKUDgqkmyvDbhTFCltomk2z4T-JdwvR8i4B6ymAdmyHNorURHgW8vFCsYJJb3aqlJ8zJvUolluNaT6iRrNweVWVPexBzDJZHK88XgPiZod74JlmkfOKP0vE7T4k=8072B8A4
+
+How to use this token with APIs
+Provide this token in the Authorization header as a bearer token when making requests to Bitbucket APIs, for example:
+
+Authorization: Bearer ATCTT3xFfGN0VJPQwzx239vzR1nYdhjMe88pVI-rHEgUg_PtqNX9Ibo02I1IyKUDgqkmyvDbhTFCltomk2z4T-JdwvR8i4B6ymAdmyHNorURHgW8vFCsYJJb3aqlJ8zJvUolluNaT6iRrNweVWVPexBzDJZHK88XgPiZod74JlmkfOKP0vE7T4k=8072B8A4
+
+How to use this token with your Git repository
+To clone this repository using this token, run:
+
+git clone https://x-token-auth:ATCTT3xFfGN0VJPQwzx239vzR1nYdhjMe88pVI-rHEgUg_PtqNX9Ibo02I1IyKUDgqkmyvDbhTFCltomk2z4T-JdwvR8i4B6ymAdmyHNorURHgW8vFCsYJJb3aqlJ8zJvUolluNaT6iRrNweVWVPexBzDJZHK88XgPiZod74JlmkfOKP0vE7T4k=8072B8A4@bitbucket.org/amygo-agents/amyclaw-u22-local.git
+
+To use this token to push code to this repository, set the Git author on the cloned repository by running the following code snippet in your terminal:
+
+git config user.email phfqpbmwcwx2mbvllxitwqqz1nc09d@bots.bitbucket.org

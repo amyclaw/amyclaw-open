@@ -1,0 +1,16 @@
+{
+  "name": "openclaw-management",
+  "version": "1.0.12",
+  "description": "OpenClaw 量产管理页：8080 端口设置 Token、配置与升级预留",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "e2e": "node scripts/e2e-config-save.js",
+    "e2e:config-save": "node scripts/e2e-config-save.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

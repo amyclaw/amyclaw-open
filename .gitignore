@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+**/data/token.txt
+
+# Build / cache
+dist/
+openclaw/dist/
+**/dist/
+.turbo/
+.next/
+.cache/
+/tmp/
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Cursor / local
+.cursor/
+
+# Large / generated (do not commit)
+*.iso
+
+# Optional: uncomment if you do not want to track openclaw upstream subtree
+# openclaw/

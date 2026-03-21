@@ -1,0 +1,47 @@
+# AmyClaw 量产：Krill 无人值守安装默认用户与密码（与 eggs.yaml / 系统 chpasswd 一致）
+# 安装到母机：sudo cp 本文件 /etc/penguins-eggs.d/krill.yaml
+# 或由 scripts/apply-oem-penguins-eggs-credentials.sh 自动复制
+---
+# welcome
+language: 'en_US.UTF-8'
+
+# location（东八区：IANA Asia/Hong_Kong）
+region: 'Asia'
+zone: 'Hong_Kong'
+
+# keyboard
+keyboardModel: 'pc105'
+keyboardLayout: 'us'
+keyboardVariant: ''
+keyboardOption: ''
+
+# partition (leave unchanged for unattended)
+installationDevice: ''
+installationMode: 'standard'
+filesystemType: 'ext4'
+userSwapChoice: 'small'
+lvmOptions:
+  vgName: ''
+  lvRootName: ''
+  lvRootFSType: ''
+  lvRootSize: ''
+  lvDataName: ''
+  lvDataFSType: ''
+  lvDataMountPoint: ''
+
+# users — 必须与 eggs-dad-example / set-oem-system-passwords 一致
+name: 'amyclaw'
+fullname: 'amyclaw'
+password: 'amyclaw20260315'
+rootPassword: 'amyclaw20260315'
+autologin: true
+hostname: 'amyclaw'
+
+# network
+iface: ""
+addressType: 'dhcp'
+address: ''
+netmask: ''
+gateway: ''
+domain: ''
+dns: ''

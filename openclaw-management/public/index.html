@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AmyClaw 管理设置</title>
+  <style>
+    /* 与 amyclaw-com 一致的「马场」风格：深色渐变背景 + 橙色强调 + 圆角卡片 */
+    :root {
+      --bg: #050816;
+      --bg-elevated: rgba(15, 23, 42, 0.92);
+      --bg-elevated-soft: rgba(15, 23, 42, 0.88);
+      --border-subtle: rgba(148, 163, 184, 0.3);
+      --accent: #f97316;
+      --accent-soft: rgba(249, 115, 22, 0.18);
+      --text: #e5e7eb;
+      --text-secondary: #9ca3af;
+      --danger: #f97373;
+      --success: #22c55e;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.9);
+      --card: var(--bg-elevated-soft);
+      --border: var(--border-subtle);
+    }
+    * { box-sizing: border-box; }
+    html { overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      margin: 0; padding: 16px; line-height: 1.5; min-height: 100%;
+      background: radial-gradient(circle at top, #1d2440 0%, #050816 55%, #020617 100%);
+      color: var(--text); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    h1 { font-size: 1.5rem; margin-top: 0; color: var(--text); }
+    h2 { font-size: 1.15rem; margin: 1.2rem 0 0.5rem; color: var(--text); font-weight: 600; }
+    section {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 1.25rem; margin-bottom: 1rem; position: relative;
+      box-shadow: var(--shadow-soft); transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    section:hover { border-color: rgba(249, 115, 22, 0.25); box-shadow: 0 20px 50px rgba(15, 23, 42, 0.95); }
+    .help { font-size: 0.9rem; color: var(--text-secondary); margin: 0.25rem 0 0.5rem; }
+    label { display: block; margin: 0.5rem 0 0.2rem; color: var(--text-secondary); }
+    input[type="text"], input[type="password"], input[type="number"], select, textarea {
+      width: 100%; max-width: 400px; padding: 8px 12px;
+      background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); transition: border-color 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    button {
+      padding: 0.6rem 1.25rem; margin: 4px 4px 4px 0; border-radius: 9999px; font-weight: 500;
+      cursor: pointer; transition: all 0.16s ease-out;
+      background: rgba(15, 23, 42, 0.96); color: var(--text); border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+    button:hover { border-color: rgba(148, 163, 184, 0.8); background: rgba(30, 41, 59, 0.98); }
+    button.primary {
+      background: linear-gradient(135deg, #f97316, #ea580c); color: #0b1120; border: none;
+      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+    }
+    button.primary:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(249, 115, 22, 0.5); }
+    button.primary:active { transform: translateY(0); }
+    button.clear { background: rgba(80, 30, 30, 0.9); border-color: rgba(249, 115, 115, 0.4); }
+    button.clear:hover { background: rgba(100, 40, 40, 0.95); border-color: var(--danger); }
+    .token-display {
+      font-family: monospace; word-break: break-all; background: rgba(15, 23, 42, 0.9);
+      padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border);
+    }
+    .status { margin: 8px 0; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; border: 1px solid var(--border); }
+    .status.ok { background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.4); }
+    .status.err { background: rgba(249, 115, 115, 0.12); border-color: rgba(249, 115, 115, 0.4); }
+    .section-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: nowrap; }
+    /* 测试结果占左侧弹性区并右对齐，按钮固定在最右侧不随结果长度跳动 */
+    .section-foot .toast { order: 0; flex: 1; min-width: 0; text-align: right; overflow: hidden; text-overflow: ellipsis; }
+    .section-foot button:not([data-save-btn]):not([data-clear]) { order: 1; flex-shrink: 0; }
+    .section-foot button[data-save-btn] { order: 2; flex-shrink: 0; }
+    .section-foot button[data-clear] { order: 3; flex-shrink: 0; }
+    .toast { font-size: 0.85rem; color: var(--success); }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(59, 130, 246, 0.08)), rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(249, 115, 22, 0.28); border-radius: 18px; padding: 1rem 1.25rem;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
+    }
+    .page-header h1 { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+    .header-version { font-size: 0.85rem; font-weight: normal; color: var(--text-secondary); }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .btn-link {
+      padding: 0.6rem 1.25rem; border-radius: 9999px; text-decoration: none; font-weight: 500;
+      background: rgba(15, 23, 42, 0.96); color: var(--text); border: 1px solid rgba(148, 163, 184, 0.5);
+      transition: all 0.16s ease-out;
+    }
+    .btn-link:hover { border-color: rgba(148, 163, 184, 0.9); background: rgba(30, 41, 59, 0.98); color: var(--text); }
+    .lang-btn { padding: 6px 12px; font-size: 0.85rem; border-radius: 9999px; }
+    fieldset.settings-locked { opacity: 0.98; }
+    fieldset.settings-locked [data-locked-disable] { pointer-events: none; opacity: 0.7; cursor: not-allowed; }
+    fieldset.settings-locked [data-locked-disable][disabled] { cursor: not-allowed; }
+    .password-wrap { display: inline-flex; align-items: center; gap: 6px; width: 100%; max-width: 400px; }
+    .password-wrap input { flex: 1; min-width: 0; }
+    .password-wrap .toggle-pwd { flex-shrink: 0; padding: 6px 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px; }
+    .password-wrap .toggle-pwd:hover { color: var(--text); }
+    .password-wrap .toggle-pwd .pwd-icon { display: inline-block; width: 20px; height: 20px; vertical-align: middle; pointer-events: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E") no-repeat center/contain; }
+    .password-wrap .toggle-pwd.pwd-visible .pwd-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 01 5.06-5.94M9.9 4.24A9.12 9.12 01 12 4c7 0 11 8 11 8a18.5 18.5 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24'/%3E%3Cline x1='1' y1='1' x2='23' y2='23'/%3E%3C/svg%3E"); }
+    .key-val-toggle { background: none; border: none; cursor: pointer; padding: 2px 6px; vertical-align: middle; color: var(--text-secondary); border-radius: 6px; }
+    .key-val-toggle:hover { color: var(--text); }
+    aside.notice {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+    /* 链接与背景区分：使用强调色，避免默认蓝色 */
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: #fb923c; text-decoration: underline; }
+    a:visited { color: #ea580c; }
+    .help a, aside.notice a { color: var(--accent); }
+    .help a:hover, aside.notice a:hover { color: #fb923c; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1 id="title">AmyClaw 管理设置 <span id="headerVersion" class="header-version" aria-hidden="true">V1.01</span></h1>
+    <div class="header-actions">
+      <a id="linkUpgrade" href="#" target="_blank" rel="noopener" class="btn-link">升级 AmyClaw 管理系统</a>
+      <span id="upgradeBadge" style="display:none; margin-left:4px; padding:2px 8px; background:var(--accent); color:#0b1120; border-radius:9999px; font-size:0.8rem;">有可用更新</span>
+      <a id="linkRemoteRegister" href="#" target="_blank" rel="noopener" class="btn-link">注册远程管理账号</a>
+      <button type="button" id="btnLang" class="lang-btn" title="Switch language">EN</button>
+    </div>
+  </header>
+
+  <div id="mainContent">
+  <section id="tokenSection">
+    <h2 id="tokenSectionTitle">AmyClaw Gateway Token</h2>
+    <p class="help" id="tokenSectionHelp">用于连接本机 AmyClaw 并保存下方配置。未设置时请先在此生成或填写 Token 并保存；已设置过可在新设备上输入 Token 登录。</p>
+    <div id="tokenBlock">
+      <button type="button" id="btnGenerate">自动生成</button>
+      <input type="password" id="tokenInput" placeholder="或手动填写 Token" />
+      <button type="button" id="btnSetToken" class="primary">确认并保存</button>
+      <p id="setTokenMsg" class="status"></p>
+    </div>
+  </section>
+
+  <p id="gatewayStatus" class="status"></p>
+
+  <aside class="notice" id="enterpriseNotice" style="margin:1rem 0; padding:0.75rem 1rem; background:var(--card); border:1px solid var(--border); border-radius:14px; font-size:0.9rem;">
+    <strong id="enterpriseNoticeTitle">使用说明</strong>
+    <p id="enterpriseNoticeBody" style="margin:0.5rem 0 0;">AmyClaw 当前版本仅限个人或互相信任的团队内部使用，不提供多租户间的信息与权限隔离。如需企业级的信息可靠隔离与权限隔离，请访问 <a href="https://www.amyclaw.ai" target="_blank" rel="noopener">www.amyclaw.ai</a> 订购企业版。</p>
+  </aside>
+
+  <section id="configSummarySection" style="display:none">
+    <h2 id="configSummaryTitle">当前已配置信息</h2>
+    <pre id="configSummaryBody" style="background:rgba(15,23,42,0.9); padding:12px; border-radius:10px; font-size:0.9rem; overflow:auto; max-height:200px; border:1px solid var(--border);"></pre>
+    <button type="button" id="btnRefreshSummary">刷新</button>
+  </section>
+
+  <fieldset id="settingsContent" class="settings-locked">
+    <section id="systemPasswordsSection">
+      <h2 id="systemPasswordsTitle">系统与用户密码</h2>
+      <p class="help" id="systemPasswordsHelp">修改本机 Ubuntu 系统管理员（root）与标准用户登录密码。密码须不少于 8 位，且包含大写、小写字母与数字。</p>
+      <div id="systemPasswordRootBlock">
+        <label id="systemPasswordRootLabel">系统管理员 (root)</label>
+        <span class="password-wrap"><input type="password" id="systemPasswordRootNew" placeholder="新密码" maxlength="128" data-locked-disable /><button type="button" class="toggle-pwd" data-for="systemPasswordRootNew" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+        <label id="systemPasswordRootConfirmLabel">确认新密码</label>
+        <input type="password" id="systemPasswordRootConfirm" placeholder="再次输入新密码" maxlength="128" style="max-width:400px; margin-bottom:8px;" data-locked-disable />
+        <button type="button" id="btnChangeRootPassword" class="primary" data-locked-disable>修改 root 密码</button>
+        <span id="toast-root-password" class="toast"></span>
+      </div>
+      <div id="systemPasswordUserBlock" style="margin-top:1.25rem;">
+        <label id="systemPasswordUserLabel">标准用户 (<span id="systemStandardUsername">—</span>)</label>
+        <span class="password-wrap"><input type="password" id="systemPasswordUserNew" placeholder="新密码" maxlength="128" data-locked-disable /><button type="button" class="toggle-pwd" data-for="systemPasswordUserNew" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+        <label id="systemPasswordUserConfirmLabel">确认新密码</label>
+        <input type="password" id="systemPasswordUserConfirm" placeholder="再次输入新密码" maxlength="128" style="max-width:400px; margin-bottom:8px;" data-locked-disable />
+        <button type="button" id="btnChangeUserPassword" class="primary" data-locked-disable>修改用户密码</button>
+        <span id="toast-user-password" class="toast"></span>
+      </div>
+    </section>
+    <section data-section="gateway">
+      <h2 id="gatewayTitle">Gateway 网关</h2>
+      <p class="help" id="gatewayHelp">端口与访问范围；修改后需重启 Gateway 生效。</p>
+      <label id="gatewayTokenLabel">当前 Token（登录后可显示、可修改）</label>
+      <div class="token-display" id="currentToken">—</div>
+      <button type="button" id="btnChangeToken" class="primary" style="margin-top:6px" data-locked-disable>更改 Token</button>
+      <div id="gatewayChangeTokenBox" style="display:none; margin-top:8px">
+        <input type="password" id="newTokenInput" placeholder="输入新 Token" style="max-width:320px" data-locked-disable />
+        <button type="button" id="btnConfirmNewToken" class="primary" data-locked-disable>确认并保存</button>
+        <button type="button" id="btnCancelNewToken" data-locked-disable>取消</button>
+      </div>
+      <label id="gatewayPortLabel">端口</label>
+      <input type="number" id="gatewayPort" data-save="gateway" data-locked-disable value="18789" />
+      <label id="gatewayBindLabel">访问范围</label>
+      <select id="gatewayBind" data-save="gateway" data-locked-disable>
+        <option value="loopback">本机（仅当前电脑可访问）</option>
+        <option value="lan">局域网（同一 WiFi/内网设备可访问）</option>
+      </select>
+      <p class="help" id="gatewayBindHelp">选「本机」最安全；选「局域网」后同一网络内的手机/电脑可连。</p>
+      <div class="section-foot">
+        <span class="toast" id="toast-gateway"></span>
+        <button type="button" data-save-btn="gateway" data-locked-disable>保存本块</button>
+        <button type="button" class="clear" data-clear="gateway" data-locked-disable>清除信息</button>
+      </div>
+    </section>
+
+    <section data-section="feishu">
+      <h2 id="feishuTitle">飞书 Feishu</h2>
+      <p class="help" id="feishuHelp">填写飞书开放平台创建的应用 ID 与密钥。飞书使用长连接，无需填回调地址。请确认已开启长连接、添加所需权限与事件订阅，设置完毕后发布机器人。</p>
+      <label id="feishuAppIdLabel">应用 ID (App ID)</label>
+      <input type="text" id="feishuAppId" data-save="feishu" placeholder="cli_xxx" />
+      <label id="feishuAppSecretLabel">应用密钥 (App Secret)</label>
+      <span class="password-wrap"><input type="password" id="feishuAppSecret" data-save="feishu" placeholder="已配置则显示为占位" /><button type="button" class="toggle-pwd" data-for="feishuAppSecret" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+      <div id="feishuDomainRow" style="display:none">
+        <label id="feishuDomainLabel">租户类型</label>
+        <input type="text" id="feishuDomain" data-save="feishu" placeholder="feishu" />
+        <p class="help" id="feishuDomainHelp">国内版填 feishu，国际版填 lark。</p>
+      </div>
+      <div class="section-foot">
+        <span class="toast" id="toast-feishu"></span>
+        <button type="button" id="btnTestFeishu" class="primary">测试（验证应用凭证与长连接可用性）</button>
+        <button type="button" data-save-btn="feishu" data-locked-disable>保存本块</button>
+        <button type="button" class="clear" data-clear="feishu" data-locked-disable>清除信息</button>
+      </div>
+    </section>
+
+    <p class="help" style="margin:1rem 0 0.5rem; padding:0.5rem 0; border-bottom:1px solid var(--border);" id="modelProviderNotice">国内用户请选择 Kimi 等国内合规模型；Gemini、GPT 等适合非中国用户，请根据使用地法规谨慎选择。<strong>优先级</strong>：上方主模型（idatabase）优先；不可用时将<strong>按顺序</strong>自动使用下方备选（Kimi → Minimax）。</p>
+    <section data-section="idatabase">
+      <h2 id="idatabaseTitle">模型 API（idatabase.ai）<span class="help" style="font-weight:normal; font-size:0.9em;">— 主模型（优先）</span></h2>
+      <p class="help" id="idatabaseHelp">Gemini、GPT 等适合非中国用户。主模型不可用时将依次使用下方 Kimi、Minimax 备选。大模型接口固定为 https://api.idatabase.ai。填写 API Key 后点击「获取模型列表」拉取主模型下拉选项。</p>
+      <p class="help" style="margin-bottom:0.5rem;"><a href="https://www.idatabase.ai" target="_blank" rel="noopener">访问 www.idatabase.ai 获取密钥</a>（充值与服务）</p>
+      <label>Base URL</label>
+      <input type="text" id="idatabaseBaseUrl" data-save="idatabase" value="https://api.idatabase.ai" readonly placeholder="https://api.idatabase.ai" style="max-width:320px; background:var(--border); color:#888;" />
+      <label>API Key</label>
+      <span class="password-wrap"><input type="password" id="idatabaseApiKey" data-save="idatabase" placeholder="已配置则留空不修改" /><button type="button" class="toggle-pwd" data-for="idatabaseApiKey" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+      <label>主模型</label>
+      <select id="primaryModel" data-save="idatabase">
+        <option value="">— 请先获取模型列表 —</option>
+      </select>
+      <button type="button" id="btnFetchModels" class="primary">获取模型列表</button>
+      <div class="section-foot">
+        <span class="toast" id="toast-idatabase"></span>
+        <button type="button" id="btnTestIdatabase" class="primary">测试连通性</button>
+        <button type="button" data-save-btn="idatabase" data-locked-disable>保存本块</button>
+        <button type="button" class="clear" data-clear="idatabase" data-locked-disable>清除信息</button>
+      </div>
+    </section>
+
+    <section data-section="kimi">
+      <h2 id="kimiTitle">Kimi（月之暗面）<span class="help" style="font-weight:normal; font-size:0.9em;">— 备选 1</span></h2>
+      <p class="help" id="kimiHelp">适合国内用户。主模型不可用时将按顺序使用本备选。API 地址固定为 Moonshot 官方，仅需填写 Key 并选择模型。</p>
+      <p class="help" id="kimiKeyHelp" style="margin-bottom:0.5rem;"></p>
+      <label>API Key</label>
+      <span class="password-wrap"><input type="password" id="kimiApiKey" data-save="kimi" placeholder="已配置则留空不修改" /><button type="button" class="toggle-pwd" data-for="kimiApiKey" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+      <label>备用模型（fallback）</label>
+      <select id="kimiModel" data-save="kimi">
+        <option value="moonshot/kimi-k2.5">Kimi K2.5</option>
+        <option value="moonshot/kimi-k2.1">Kimi K2.1</option>
+      </select>
+      <div class="section-foot">
+        <span class="toast" id="toast-kimi"></span>
+        <button type="button" id="btnTestKimi" class="primary">测试连通性</button>
+        <button type="button" data-save-btn="kimi" data-locked-disable>保存本块</button>
+        <button type="button" class="clear" data-clear="kimi" data-locked-disable>清除信息</button>
+      </div>
+    </section>
+
+    <section data-section="memory">
+      <h2 id="memoryTitle">向量检索（记忆）</h2>
+      <p class="help" id="memoryHelp">URL 与大模型相同，默认 https://api.idatabase.ai；模型默认 text-embedding-005。填写 API Key 后点击「获取可用模型」拉取下拉选项。</p>
+      <label>Base URL</label>
+      <input type="text" id="memoryBaseUrl" data-save="memory" placeholder="https://api.idatabase.ai/v1/" />
+      <label>模型</label>
+      <select id="memoryModel" data-save="memory">
+        <option value="text-embedding-005">text-embedding-005</option>
+      </select>
+      <button type="button" id="btnFetchEmbeddingModels">获取可用模型</button>
+      <label>API Key</label>
+      <span class="password-wrap"><input type="password" id="memoryApiKey" data-save="memory" placeholder="已配置则留空不修改" /><button type="button" class="toggle-pwd" data-for="memoryApiKey" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+      <div class="section-foot">
+        <span class="toast" id="toast-memory"></span>
+        <button type="button" id="btnTestMemory" class="primary">测试连通性</button>
+        <button type="button" data-save-btn="memory" data-locked-disable>保存本块</button>
+        <button type="button" class="clear" data-clear="memory" data-locked-disable>清除信息</button>
+      </div>
+    </section>
+
+    <section data-section="minimax">
+      <h2 id="minimaxTitle">Minimax — 备选 2</h2>
+      <p class="help" id="minimaxHelp">主模型与 Kimi 均不可用时将使用本备选。填 API Key 即用。</p>
+      <label>API Key</label>
+      <span class="password-wrap"><input type="password" id="minimaxApiKey" data-save="minimax" data-locked-disable placeholder="已配置则留空不修改" /><button type="button" class="toggle-pwd" data-for="minimaxApiKey" aria-label="显示密码" title="显示/隐藏输入的密码"><span class="pwd-icon" aria-hidden="true"></span></button></span>
+      <div class="section-foot">
+        <span class="toast" id="toast-minimax"></span>
+        <button type="button" data-save-btn="minimax" data-locked-disable>保存本块</button>
+        <button type="button" class="clear" data-clear="minimax" data-locked-disable>清除信息</button>
+      </div>
+    </section>
+
+    <section>
+      <h2 id="updateTitle">AmyClaw 自动更新</h2>
+      <p class="help" id="updateHelp">开发中，敬请期待。</p>
+    </section>
+
+    <section>
+      <div class="section-foot">
+        <span class="toast" id="toast-save-all"></span>
+        <button type="button" id="btnSaveAll" class="primary" data-locked-disable>保存全部配置</button>
+        <button type="button" id="btnRestartGateway">重启网关</button>
+      </div>
+      <p id="saveMsg" class="status"></p>
+    </section>
+  </fieldset>
+  </div>
+
+  <div id="upgradePanel" style="display:none;">
+    <section>
+      <h2 id="upgradePanelTitle">系统升级</h2>
+      <p class="help" id="upgradePanelVersionLabel">当前版本</p>
+      <p id="upgradePanelVersion" style="font-family:monospace; margin:0.5rem 0 1rem;">—</p>
+      <button type="button" id="btnUpgradeCheckEnv" class="primary">检测本机环境</button>
+      <p id="upgradeQualifyResult" class="status" style="margin-top:1rem; display:none;"></p>
+      <div class="section-foot" style="margin-top:1rem;">
+        <button type="button" id="btnUpgradeAgree" class="primary" style="display:none;">同意升级</button>
+        <button type="button" id="btnUpgradeBack">返回设置</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API = (typeof window !== "undefined" && window.location && window.location.origin) ? window.location.origin : "";
+    let token = localStorage.getItem("openclaw_management_token") || "";
+    const saveDebounce = {};
+    const DEBOUNCE_MS = 600;
+    /** 通过 http://局域网IP 或 http://主机名 访问时，navigator.clipboard 常不可用，需 fallback（execCommand） */
+    function copyTextToClipboard(text) {
+      return new Promise(function (resolve) {
+        if (typeof text !== "string" || !text) {
+          resolve(false);
+          return;
+        }
+        function fallbackExecCommand() {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;font-size:16px";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, text.length);
+            const ok = document.execCommand("copy");
+            document.body.removeChild(ta);
+            resolve(ok);
+          } catch (e) {
+            resolve(false);
+          }
+        }
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(text).then(function () { resolve(true); }).catch(fallbackExecCommand);
+        } else {
+          fallbackExecCommand();
+        }
+      });
+    }
+    const SECTIONS = ["gateway", "feishu", "idatabase", "kimi", "memory", "minimax"];
+    let lang = localStorage.getItem("openclaw_lang") || "zh";
+    const LANG = {
+      zh: {
+        title: "AmyClaw 管理设置",
+        tokenSectionTitle: "AmyClaw Gateway Token",
+        tokenSectionHelp: "用于连接本机 AmyClaw 并保存下方配置。未设置时请先在此生成或填写 Token 并保存；已设置过可在新设备上输入 Token 登录。",
+        tokenSectionHelpNoToken: "设备尚未设置 Token 或 Token 已清除。请生成或输入新 Token 并保存。",
+        tokenSectionHelpUnlock: "设备已设置 Token。请在下方输入该 Token 并点击「确认并保存」以解锁。",
+        currentTokenVerified: "当前 Token（已验证）",
+        gatewayTitle: "Gateway 网关",
+        gatewayHelp: "端口与访问范围；修改后需重启 Gateway 生效。",
+        gatewayTokenLabel: "当前 Token（登录后可显示、可修改）",
+        changeToken: "更改 Token",
+        confirmSaveToken: "确认并保存",
+        cancel: "取消",
+        gatewayPortLabel: "端口",
+        gatewayBindLabel: "访问范围",
+        bindLoopback: "本机（仅当前电脑可访问）",
+        bindLan: "局域网（同一 WiFi/内网设备可访问）",
+        gatewayBindHelp: "选「本机」最安全；选「局域网」后同一网络内的手机/电脑可连。",
+        feishuTitle: "飞书 Feishu",
+        feishuHelp: "填写飞书开放平台创建的应用 ID 与密钥。飞书使用长连接，无需填回调地址。请确认已开启长连接、添加所需权限与事件订阅，设置完毕后发布机器人。",
+        feishuAppIdLabel: "应用 ID (App ID)",
+        feishuAppSecretLabel: "应用密钥 (App Secret)",
+        feishuDomainLabel: "租户类型",
+        feishuDomainHelp: "国内版填 feishu，国际版填 lark。",
+        modelProviderNotice: "国内用户请选择 Kimi 等国内合规模型；Gemini、GPT 等适合非中国用户，请根据使用地法规谨慎选择。优先级：上方主模型（idatabase）优先；不可用时将按顺序自动使用下方备选（Kimi → Minimax）。",
+        idatabaseTitle: "模型 API（idatabase.ai）",
+        idatabaseHelp: "Gemini、GPT 等适合非中国用户。主模型不可用时将依次使用下方 Kimi、Minimax 备选。填写 API Key 即可使用。可点击「测试连通性」验证 Key 是否有效。",
+        kimiTitle: "Kimi（月之暗面）",
+        kimiHelp: "适合国内用户。主模型不可用时将按顺序使用本备选。API 地址固定为 Moonshot 官方，仅需填写 Key 并选择模型。",
+        kimiKeyHelp: "请填写月之暗面开放平台获取的官方 API Key：<a href=\"https://platform.moonshot.cn\" target=\"_blank\" rel=\"noopener\">platform.moonshot.cn</a> 创建应用并获取 Key，<a href=\"https://platform.moonshot.cn/docs/guide/use-kimi-in-openclaw\" target=\"_blank\" rel=\"noopener\">接入文档</a>。",
+        minimaxTitle: "Minimax — 备选 2",
+        minimaxHelp: "主模型与 Kimi 均不可用时将使用本备选。填 API Key 即用。",
+        memoryTitle: "向量检索（记忆）",
+        memoryHelp: "默认 Google text-embedding-005；需填写 API Key（可与 idatabase 使用相同 Key 测试连通性）。",
+        updateTitle: "AmyClaw 自动更新",
+        updateHelp: "每日自动检测一次升级；若有可用更新，顶部「升级」旁会显示提示，点击进入升级子页。子页可查看当前版本、检测本机环境并上传服务器校验，通过后可同意升级。",
+        saveAll: "保存全部配置",
+        restartGateway: "重启网关",
+        saveBlock: "保存本块",
+        clearBlock: "清除信息",
+        testConnectivity: "测试连通性",
+        testFeishu: "测试（验证应用凭证与长连接可用性）",
+        upgradeLink: "升级 AmyClaw 管理系统",
+        remoteRegisterLink: "注册远程管理账号",
+        enterpriseNoticeTitle: "使用说明",
+        enterpriseNoticeBody: "AmyClaw 当前版本仅限个人或互相信任的团队内部使用，不提供多租户间的信息与权限隔离。如需企业级的信息可靠隔离与权限隔离，请访问 <a href=\"https://www.amyclaw.ai\" target=\"_blank\" rel=\"noopener\">www.amyclaw.ai</a> 订购企业版。",
+        placeholderTokenInput: "或手动填写 Token",
+        placeholderTokenInputNew: "输入新 Token",
+        copyToken: "复制",
+        clearTokenInput: "清空",
+        placeholderNewToken: "输入新 Token",
+        placeholderConfiguredEmpty: "已配置则留空不修改",
+        placeholderLoginToken: "输入 Token 验证",
+        btnFetchModels: "获取模型列表",
+        placeholderFetchModelsFirst: "— 请先获取模型列表 —",
+        btnFetchEmbeddingModels: "获取可用模型",
+        togglePwdShow: "显示",
+        togglePwdHide: "隐藏",
+        upgradeSubpageTitle: "系统升级",
+        upgradeSubpageCurrentVersion: "当前版本",
+        upgradeSubpageCheckEnv: "检测本机环境",
+        upgradeSubpageQualifyResult: "环境校验结果",
+        upgradeSubpageAgreeUpgrade: "同意升级",
+        upgradeSubpageBack: "返回设置",
+        upgradeAvailableBadge: "有可用更新",
+        upgradeDailyCheck: "每日检测一次",
+        systemPasswordsTitle: "系统与用户密码",
+        systemPasswordsHelp: "修改本机 Ubuntu 系统管理员（root）与标准用户登录密码。仅修改系统登录密码，不影响已运行的 AmyClaw 服务。密码须不少于 8 位，且包含大写、小写字母与数字。",
+        systemPasswordRootLabel: "系统管理员 (root)",
+        systemPasswordUserLabel: "标准用户",
+        confirmPasswordLabel: "确认新密码",
+        placeholderNewPassword: "新密码",
+        placeholderConfirmPassword: "再次输入新密码",
+        btnChangeRootPassword: "修改 root 密码",
+        btnChangeUserPassword: "修改用户密码",
+        passwordRule: "不少于 8 位，且包含大写、小写字母与数字",
+      },
+      en: {
+        title: "AmyClaw Settings",
+        tokenSectionTitle: "AmyClaw Gateway Token",
+        tokenSectionHelp: "Used to connect to this machine's AmyClaw and save config below. If not set, generate or enter a token here first; if already set, enter the token on a new device to log in.",
+        tokenSectionHelpNoToken: "No token is set or token was cleared. Please generate or enter a new token and save.",
+        tokenSectionHelpUnlock: "A token is already set on this device. Enter it below and click Confirm to unlock.",
+        currentTokenVerified: "Current token (verified)",
+        gatewayTitle: "Gateway",
+        gatewayHelp: "Port and access scope; restart Gateway after changes.",
+        gatewayTokenLabel: "Current Token (visible and editable after login)",
+        changeToken: "Change Token",
+        confirmSaveToken: "Confirm & Save",
+        cancel: "Cancel",
+        gatewayPortLabel: "Port",
+        gatewayBindLabel: "Access scope",
+        bindLoopback: "This machine only",
+        bindLan: "LAN (same WiFi / local network)",
+        gatewayBindHelp: "Choose \"This machine\" for maximum security; \"LAN\" allows phones/PCs on the same network to connect.",
+        feishuTitle: "Feishu / Lark",
+        feishuHelp: "Enter your Feishu open platform App ID and Secret. Feishu uses long connection; no callback URL needed. Ensure long connection, permissions and event subscriptions are set, then publish the bot.",
+        feishuAppIdLabel: "App ID",
+        feishuAppSecretLabel: "App Secret",
+        feishuDomainLabel: "Tenant type",
+        feishuDomainHelp: "feishu for China, lark for international.",
+        modelProviderNotice: "Users in China: please choose compliant domestic models such as Kimi; Gemini, GPT, etc. for users outside China. Choose according to local regulations. Priority: primary (idatabase) first; when unavailable, fallbacks are used in order: Kimi → Minimax.",
+        idatabaseTitle: "Model API (idatabase.ai)",
+        idatabaseHelp: "Gemini, GPT, etc. for users outside China. When primary is unavailable, Kimi then Minimax are used in order. Enter API Key and click \"Test connectivity\" to verify.",
+        kimiTitle: "Kimi (Moonshot)",
+        kimiHelp: "For users in China. Used as fallback 1 when primary is unavailable. Enter official API Key and select model.",
+        kimiKeyHelp: "Enter the official API Key from <a href=\"https://platform.moonshot.cn\" target=\"_blank\" rel=\"noopener\">platform.moonshot.cn</a> (create an app to get the key). <a href=\"https://platform.moonshot.cn/docs/guide/use-kimi-in-openclaw\" target=\"_blank\" rel=\"noopener\">OpenClaw integration guide</a>.",
+        minimaxTitle: "Minimax — Fallback 2",
+        minimaxHelp: "Used when primary and Kimi are both unavailable. Enter API Key to enable.",
+        memoryTitle: "Vector / Memory",
+        memoryHelp: "Default Google text-embedding-005. Enter API Key (same key as idatabase can be used for testing).",
+        updateTitle: "AmyClaw Auto Update",
+        updateHelp: "Automatic upgrade check once per day. If an update is available, a badge appears next to the Upgrade link; click to open the upgrade sub-page to see the current version, run environment check, and agree to upgrade after server qualifies.",
+        saveAll: "Save all",
+        restartGateway: "Restart Gateway",
+        saveBlock: "Save this block",
+        clearBlock: "Clear info",
+        testConnectivity: "Test connectivity",
+        testFeishu: "Test (verify app credentials & long connection)",
+        upgradeLink: "Upgrade AmyClaw",
+        remoteRegisterLink: "Register remote account",
+        enterpriseNoticeTitle: "Usage",
+        enterpriseNoticeBody: "AmyClaw is for personal or trusted team use only; it does not provide isolation between tenants. For enterprise-grade data and access control isolation, visit <a href=\"https://www.amyclaw.ai\" target=\"_blank\" rel=\"noopener\">www.amyclaw.ai</a> to order the Enterprise edition.",
+        placeholderTokenInput: "Or enter token manually",
+        placeholderTokenInputNew: "Enter new token",
+        copyToken: "Copy",
+        clearTokenInput: "Clear",
+        placeholderNewToken: "Enter new token",
+        placeholderConfiguredEmpty: "Leave empty to keep existing",
+        placeholderLoginToken: "Enter token to verify",
+        btnFetchModels: "Fetch model list",
+        placeholderFetchModelsFirst: "— Fetch model list first —",
+        btnFetchEmbeddingModels: "Fetch embedding models",
+        togglePwdShow: "Show",
+        togglePwdHide: "Hide",
+        upgradeSubpageTitle: "System Upgrade",
+        upgradeSubpageCurrentVersion: "Current version",
+        upgradeSubpageCheckEnv: "Detect local environment",
+        upgradeSubpageQualifyResult: "Environment check result",
+        upgradeSubpageAgreeUpgrade: "Agree & upgrade",
+        upgradeSubpageBack: "Back to settings",
+        upgradeAvailableBadge: "Update available",
+        upgradeDailyCheck: "Check once per day",
+        systemPasswordsTitle: "System & user passwords",
+        systemPasswordsHelp: "Change Ubuntu root and standard user login passwords. Only affects system login; does not affect already-running AmyClaw services. Password must be at least 8 characters with uppercase, lowercase and digit.",
+        systemPasswordRootLabel: "Administrator (root)",
+        systemPasswordUserLabel: "Standard user",
+        confirmPasswordLabel: "Confirm new password",
+        placeholderNewPassword: "New password",
+        placeholderConfirmPassword: "Confirm new password",
+        btnChangeRootPassword: "Change root password",
+        btnChangeUserPassword: "Change user password",
+        passwordRule: "At least 8 characters with uppercase, lowercase and digit",
+      },
+    };
+    function t(key) { return LANG[lang]?.[key] ?? LANG.zh[key] ?? key; }
+    function applyLang() {
+      document.getElementById("title").textContent = t("title");
+      const el = (id, prop, value) => { const e = document.getElementById(id); if (e) e[prop || "textContent"] = value; };
+      el("tokenSectionTitle", null, t("tokenSectionTitle")); el("tokenSectionHelp", null, t("tokenSectionHelp"));
+      el("gatewayTitle", null, t("gatewayTitle")); el("gatewayHelp", null, t("gatewayHelp"));
+      el("gatewayTokenLabel", null, t("gatewayTokenLabel")); el("gatewayPortLabel", null, t("gatewayPortLabel"));
+      el("gatewayBindLabel", null, t("gatewayBindLabel")); el("gatewayBindHelp", null, t("gatewayBindHelp"));
+      el("feishuTitle", null, t("feishuTitle")); el("feishuHelp", null, t("feishuHelp"));
+      el("feishuAppIdLabel", null, t("feishuAppIdLabel")); el("feishuAppSecretLabel", null, t("feishuAppSecretLabel"));
+      el("feishuDomainLabel", null, t("feishuDomainLabel")); el("feishuDomainHelp", null, t("feishuDomainHelp"));
+      const noticeTitle = document.getElementById("enterpriseNoticeTitle"); if (noticeTitle) noticeTitle.textContent = t("enterpriseNoticeTitle");
+      const noticeBody = document.getElementById("enterpriseNoticeBody"); if (noticeBody) noticeBody.innerHTML = t("enterpriseNoticeBody");
+      el("modelProviderNotice", null, t("modelProviderNotice"));
+      el("idatabaseTitle", null, t("idatabaseTitle")); el("idatabaseHelp", null, t("idatabaseHelp"));
+      el("kimiTitle", null, t("kimiTitle")); el("kimiHelp", null, t("kimiHelp")); el("kimiKeyHelp", "innerHTML", t("kimiKeyHelp"));
+      el("minimaxTitle", null, t("minimaxTitle")); el("minimaxHelp", null, t("minimaxHelp"));
+      el("memoryTitle", null, t("memoryTitle")); el("memoryHelp", null, t("memoryHelp"));
+      el("updateTitle", null, t("updateTitle")); el("updateHelp", null, t("updateHelp"));
+      const btnSaveAll = document.getElementById("btnSaveAll"); if (btnSaveAll) btnSaveAll.textContent = t("saveAll");
+      const btnRestartGateway = document.getElementById("btnRestartGateway"); if (btnRestartGateway) btnRestartGateway.textContent = t("restartGateway");
+      document.querySelectorAll("[data-save-btn]").forEach(b => { b.textContent = t("saveBlock"); });
+      document.querySelectorAll("[data-clear]").forEach(b => { b.textContent = t("clearBlock"); });
+      const btnTestIdatabase = document.getElementById("btnTestIdatabase"); if (btnTestIdatabase) btnTestIdatabase.textContent = t("testConnectivity");
+      const btnTestMemory = document.getElementById("btnTestMemory"); if (btnTestMemory) btnTestMemory.textContent = t("testConnectivity");
+      const btnTestFeishu = document.getElementById("btnTestFeishu"); if (btnTestFeishu) btnTestFeishu.textContent = t("testFeishu");
+      const linkUpgrade = document.getElementById("linkUpgrade"); if (linkUpgrade) linkUpgrade.textContent = t("upgradeLink");
+      const linkRemote = document.getElementById("linkRemoteRegister"); if (linkRemote) linkRemote.textContent = t("remoteRegisterLink");
+      const changeBtn = document.getElementById("btnChangeToken"); if (changeBtn) changeBtn.textContent = t("changeToken");
+      const confirmToken = document.getElementById("btnConfirmNewToken"); if (confirmToken) confirmToken.textContent = t("confirmSaveToken");
+      const cancelToken = document.getElementById("btnCancelNewToken"); if (cancelToken) cancelToken.textContent = t("cancel");
+      document.getElementById("btnLang").textContent = lang === "zh" ? "EN" : "中文";
+      const bindSelect = document.getElementById("gatewayBind");
+      if (bindSelect && bindSelect.options.length >= 2) {
+        bindSelect.options[0].text = t("bindLoopback");
+        bindSelect.options[1].text = t("bindLan");
+      }
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+      const tokenInput = document.getElementById("tokenInput"); if (tokenInput) tokenInput.placeholder = t("placeholderTokenInput");
+      const newTokenInput = document.getElementById("newTokenInput"); if (newTokenInput) newTokenInput.placeholder = t("placeholderNewToken");
+      ["idatabaseApiKey", "kimiApiKey", "memoryApiKey", "minimaxApiKey", "feishuAppSecret"].forEach(function (id) {
+        const el = document.getElementById(id); if (el) el.placeholder = t("placeholderConfiguredEmpty");
+      });
+      const btnFetchModels = document.getElementById("btnFetchModels"); if (btnFetchModels) btnFetchModels.textContent = t("btnFetchModels");
+      const btnFetchEmbedding = document.getElementById("btnFetchEmbeddingModels"); if (btnFetchEmbedding) btnFetchEmbedding.textContent = t("btnFetchEmbeddingModels");
+      const primarySelect = document.getElementById("primaryModel");
+      if (primarySelect && primarySelect.options[0]) primarySelect.options[0].text = t("placeholderFetchModelsFirst");
+      document.querySelectorAll(".toggle-pwd").forEach(function (btn) {
+        var showing = btn.getAttribute("data-showing") === "1";
+        btn.classList.toggle("pwd-visible", showing);
+        btn.setAttribute("aria-label", showing ? t("togglePwdHide") : t("togglePwdShow"));
+        btn.setAttribute("title", (showing ? t("togglePwdHide") : t("togglePwdShow")) + "（当前输入是否可见）");
+      });
+      const upgradePanelTitle = document.getElementById("upgradePanelTitle"); if (upgradePanelTitle) upgradePanelTitle.textContent = t("upgradeSubpageTitle");
+      const upgradePanelVersionLabel = document.getElementById("upgradePanelVersionLabel"); if (upgradePanelVersionLabel) upgradePanelVersionLabel.textContent = t("upgradeSubpageCurrentVersion");
+      const btnUpgradeCheckEnv = document.getElementById("btnUpgradeCheckEnv"); if (btnUpgradeCheckEnv) btnUpgradeCheckEnv.textContent = t("upgradeSubpageCheckEnv");
+      const btnUpgradeAgree = document.getElementById("btnUpgradeAgree"); if (btnUpgradeAgree) btnUpgradeAgree.textContent = t("upgradeSubpageAgreeUpgrade");
+      const btnUpgradeBack = document.getElementById("btnUpgradeBack"); if (btnUpgradeBack) btnUpgradeBack.textContent = t("upgradeSubpageBack");
+      const upgradeBadge = document.getElementById("upgradeBadge"); if (upgradeBadge) upgradeBadge.textContent = t("upgradeAvailableBadge");
+      const sysPwdTitle = document.getElementById("systemPasswordsTitle"); if (sysPwdTitle) sysPwdTitle.textContent = t("systemPasswordsTitle");
+      const sysPwdHelp = document.getElementById("systemPasswordsHelp"); if (sysPwdHelp) sysPwdHelp.textContent = t("systemPasswordsHelp");
+      const sysRootLabel = document.getElementById("systemPasswordRootLabel"); if (sysRootLabel) sysRootLabel.textContent = t("systemPasswordRootLabel");
+      const unEl = document.getElementById("systemStandardUsername");
+      const un = unEl ? unEl.textContent : "—";
+      const sysUserLabel = document.getElementById("systemPasswordUserLabel"); if (sysUserLabel) sysUserLabel.innerHTML = t("systemPasswordUserLabel") + " (<span id=\"systemStandardUsername\">" + un + "</span>)";
+      ["systemPasswordRootConfirmLabel", "systemPasswordUserConfirmLabel"].forEach(function (id) { const e = document.getElementById(id); if (e) e.textContent = t("confirmPasswordLabel"); });
+      ["systemPasswordRootNew", "systemPasswordUserNew"].forEach(function (id) { const e = document.getElementById(id); if (e) e.placeholder = t("placeholderNewPassword"); });
+      ["systemPasswordRootConfirm", "systemPasswordUserConfirm"].forEach(function (id) { const e = document.getElementById(id); if (e) e.placeholder = t("placeholderConfirmPassword"); });
+      const btnRoot = document.getElementById("btnChangeRootPassword"); if (btnRoot) btnRoot.textContent = t("btnChangeRootPassword");
+      const btnUser = document.getElementById("btnChangeUserPassword"); if (btnUser) btnUser.textContent = t("btnChangeUserPassword");
+    }
+
+    function headers() {
+      const h = { "Content-Type": "application/json" };
+      if (token) h["Authorization"] = "Bearer " + token;
+      return h;
+    }
+
+    /** 不带 Token 请求，用于检测设备是否已设 Token（每次刷新用最新状态） */
+    async function getStatusNoAuth() {
+      const res = await fetch(API + "/api/status");
+      return res.json().catch(() => ({}));
+    }
+
+    async function api(method, path, body) {
+      const res = await fetch(API + path, { method, headers: headers(), body: body ? JSON.stringify(body) : undefined });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    function setSettingsLocked(locked) {
+      const field = document.getElementById("settingsContent");
+      if (!field) return;
+      field.classList.toggle("settings-locked", locked);
+      field.disabled = false;
+      field.querySelectorAll("[data-locked-disable]").forEach((e) => {
+        e.disabled = !!locked;
+      });
+    }
+
+    function toast(sectionId, msg) {
+      const el = document.getElementById("toast-" + sectionId);
+      if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ""; }, 3000); }
+    }
+
+    function buildPatchGateway() {
+      return {
+        gateway: {
+          port: Number(document.getElementById("gatewayPort").value) || 18789,
+          bind: document.getElementById("gatewayBind").value,
+        },
+      };
+    }
+    function buildPatchFeishu(isClear) {
+      const appId = document.getElementById("feishuAppId").value.trim();
+      const appSecret = document.getElementById("feishuAppSecret").value.trim();
+      const domain = document.getElementById("feishuDomain").value.trim() || "feishu";
+      const feishu = { enabled: !isClear && !!appId, domain, requireMention: false };
+      feishu.accounts = { default: {} };
+      if (appId) feishu.accounts.default.appId = appId;
+      if (appSecret) feishu.accounts.default.appSecret = appSecret;
+      if (isClear) feishu.accounts.default.appId = feishu.accounts.default.appSecret = "";
+      return { channels: { feishu } };
+    }
+    var IDATABASE_GOOGLE_MODELS = [
+      { id: "gemini-3.1-pro-preview", name: "Gemini-3.1-Pro-Preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
+      { id: "gemini-3.1-flash-lite-preview", name: "Gemini-3.1-flash-lite-preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
+    ];
+    function buildPatchIdatabase(isClear) {
+      const baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
+      const primaryRaw = document.getElementById("primaryModel").value.trim() || "google/gemini-3.1-flash-lite-preview";
+      var primary = primaryRaw;
+      var modelId = primary.includes("/") ? primary.split("/").pop() : primary;
+      if (primary.startsWith("idatabase/")) primary = "google/" + modelId;
+      const idKey = document.getElementById("idatabaseApiKey").value.trim();
+      const patch = { models: { providers: {} } };
+      if (!isClear) patch.agents = { defaults: { model: { primary } } };
+      patch.models.providers.idatabase = {
+        baseUrl,
+        models: [{ id: modelId, name: "idatabase", input: ["text"], contextWindow: 128000, maxTokens: 8192 }],
+      };
+      if (isClear || idKey) patch.models.providers.idatabase.apiKey = isClear ? "" : idKey;
+      if (!isClear && idKey) {
+        patch.models.providers.google = {
+          baseUrl: "https://api.idatabase.ai/v1beta",
+          api: "google-generative-ai",
+          models: IDATABASE_GOOGLE_MODELS,
+          apiKey: idKey,
+        };
+      } else if (isClear) {
+        patch.models.providers.google = {
+          baseUrl: "https://api.idatabase.ai/v1beta",
+          api: "google-generative-ai",
+          models: IDATABASE_GOOGLE_MODELS,
+          apiKey: "",
+        };
+      }
+      return patch;
+    }
+    function buildPatchMemory(isClear) {
+      const baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
+      const model = document.getElementById("memoryModel").value || "text-embedding-005";
+      const apiKey = document.getElementById("memoryApiKey").value.trim();
+      const remote = { baseUrl };
+      if (isClear) remote.apiKey = "";
+      else if (apiKey) remote.apiKey = apiKey;
+      return {
+        agents: {
+          defaults: {
+            memorySearch: {
+              provider: "openai",
+              model,
+              remote,
+            },
+          },
+        },
+      };
+    }
+    function buildPatchKimi(isClear) {
+      const kimiKey = document.getElementById("kimiApiKey").value.trim();
+      const kimiModel = document.getElementById("kimiModel").value || "moonshot/kimi-k2.5";
+      const patch = {
+        models: { providers: { moonshot: { apiKey: isClear ? "" : kimiKey } } },
+      };
+      if (!isClear && kimiKey) {
+        patch.agents = { defaults: { model: { fallbacks: [kimiModel] } } };
+      } else if (isClear) {
+        patch.agents = { defaults: { model: { fallbacks: [] } } };
+      }
+      return patch;
+    }
+    function buildPatchMinimax(isClear) {
+      const mmKey = document.getElementById("minimaxApiKey").value.trim();
+      if (!isClear && !mmKey) return {};
+      return {
+        models: {
+          providers: {
+            minimax: { apiKey: isClear ? "" : mmKey },
+          },
+        },
+      };
+    }
+
+    async function saveSection(sectionId, isClear) {
+      let patch;
+      switch (sectionId) {
+        case "gateway": patch = buildPatchGateway(); break;
+        case "feishu": patch = buildPatchFeishu(!!isClear); break;
+        case "idatabase": patch = buildPatchIdatabase(!!isClear); break;
+        case "kimi": patch = buildPatchKimi(!!isClear); break;
+        case "memory": patch = buildPatchMemory(!!isClear); break;
+        case "minimax": patch = buildPatchMinimax(!!isClear); break;
+        default: return;
+      }
+      try {
+        const data = await api("PATCH", "/api/config", patch);
+        toast(sectionId, (data?.message && data.message.includes("热加载") ? (lang === "zh" ? "已保存，Gateway 将热加载" : "Saved, gateway will hot-reload") : (lang === "zh" ? "已保存" : "Saved")));
+        loadConfig();
+      } catch (e) {
+        toast(sectionId, "保存失败: " + e.message);
+      }
+    }
+
+    function scheduleSave(sectionId) {
+      clearTimeout(saveDebounce[sectionId]);
+      saveDebounce[sectionId] = setTimeout(() => saveSection(sectionId), DEBOUNCE_MS);
+    }
+
+    function clearSection(sectionId) {
+      const sections = {
+        gateway: ["gatewayPort", "gatewayBind"],
+        feishu: ["feishuAppId", "feishuAppSecret", "feishuDomain"],
+        idatabase: ["idatabaseBaseUrl", "idatabaseApiKey", "primaryModel"],
+        kimi: ["kimiApiKey", "kimiModel"],
+        memory: ["memoryBaseUrl", "memoryModel", "memoryApiKey"],
+        minimax: ["minimaxApiKey"],
+      };
+      const ids = sections[sectionId];
+      if (!ids) return;
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (el.tagName === "SELECT") el.selectedIndex = 0;
+          else el.value = "";
+        }
+      });
+      if (sectionId === "gateway") {
+        document.getElementById("gatewayPort").value = "18789";
+        document.getElementById("gatewayBind").value = "loopback";
+      }
+      if (sectionId === "idatabase") {
+        document.getElementById("idatabaseBaseUrl").value = "https://api.idatabase.ai";
+        const pmEl = document.getElementById("primaryModel");
+        if (pmEl) pmEl.value = "";
+      }
+      if (sectionId === "kimi") {
+        document.getElementById("kimiApiKey").value = "";
+        document.getElementById("kimiModel").value = "moonshot/kimi-k2.5";
+      }
+      if (sectionId === "memory") {
+        document.getElementById("memoryBaseUrl").value = "https://api.idatabase.ai/v1/";
+        const memSel = document.getElementById("memoryModel");
+        if (memSel) { memSel.value = "text-embedding-005"; memSel.innerHTML = "<option value=\"text-embedding-005\">text-embedding-005</option>"; }
+      }
+      saveSection(sectionId, true).then(() => { loadConfigSummary(); toast(sectionId, "已清除并保存"); });
+    }
+
+    function renderTokenBlock(tokenSet, hasToken) {
+      const block = document.getElementById("tokenBlock");
+      const helpEl = document.getElementById("tokenSectionHelp");
+      if (tokenSet && hasToken) {
+        if (helpEl) helpEl.textContent = t("tokenSectionHelp");
+        block.innerHTML =
+          '<label>' + t("currentTokenVerified") + '</label>' +
+          '<div class="token-display" id="currentToken">' + token + '</div>' +
+          '<div style="margin-top:8px">' +
+          '<button type="button" id="btnClearDeviceToken" class="clear">清除设备 Token（登出并清除本机已设 Token）</button> ' +
+          '<button type="button" id="btnClearAllAccounts" class="clear">清除所有帐号信息（含 Gateway Token）</button> ' +
+          '<button type="button" id="btnKeysFinal">查看 Key</button>' +
+          '</div>' +
+          '<div id="keysFinalBox" style="display:none; margin-top:12px; padding:12px; background:rgba(15,23,42,0.9); border-radius:10px; border:1px solid var(--border); overflow-x:auto;"></div>';
+        document.getElementById("btnClearDeviceToken").onclick = () => clearDeviceToken();
+        document.getElementById("btnClearAllAccounts").onclick = () => clearAllAccounts();
+        document.getElementById("btnKeysFinal").onclick = () => showKeysFinal();
+        return;
+      }
+      if (helpEl) helpEl.textContent = tokenSet ? t("tokenSectionHelpUnlock") : t("tokenSectionHelpNoToken");
+      block.innerHTML =
+        '<button type="button" id="btnGenerate">自动生成</button> ' +
+        '<span class="password-wrap">' +
+        '<input type="password" id="tokenInput" placeholder="' + (t("placeholderTokenInputNew") || "输入或粘贴 Token") + '" style="max-width:320px" /> ' +
+        '<button type="button" class="toggle-pwd" data-for="tokenInput" aria-label="' + t("togglePwdShow") + '"><span class="pwd-icon" aria-hidden="true"></span></button> ' +
+        '<button type="button" id="btnCopyToken" title="' + (t("copyToken") || "复制") + '">' + (t("copyToken") || "复制") + '</button>' +
+        '</span> ' +
+        '<button type="button" id="btnSetToken" class="primary">确认并保存</button> ' +
+        '<button type="button" id="btnClearTokenInput" class="clear">' + (t("clearTokenInput") || "清空") + '</button> ' +
+        '<p id="setTokenMsg" class="status"></p>' +
+        (tokenSet ? '<p class="help" style="margin-top:12px">验证 Token 后可用：<button type="button" id="btnClearAllAccountsDisabled" class="clear" disabled title="请先在上方输入 Token 并点击「确认并保存」验证后再使用">清除所有帐号信息（含 Gateway Token）</button></p>' : '');
+      document.getElementById("btnGenerate").onclick = () => {
+        const val = Array.from(crypto.getRandomValues(new Uint8Array(24))).map((b) => b.toString(16).padStart(2, "0")).join("");
+        const input = document.getElementById("tokenInput");
+        const toggle = block.querySelector(".toggle-pwd[data-for=\"tokenInput\"]");
+        input.value = val;
+        input.type = "text";
+        if (toggle) { toggle.setAttribute("data-showing", "1"); toggle.classList.add("pwd-visible"); toggle.setAttribute("aria-label", t("togglePwdHide")); }
+        document.getElementById("setTokenMsg").textContent = (lang === "zh" ? "已生成，可直接查看或复制。" : "Generated. Token is visible; you can copy it.");
+        document.getElementById("setTokenMsg").className = "status ok";
+      };
+      document.getElementById("btnSetToken").onclick = () => submitSetToken();
+      document.getElementById("btnCopyToken").onclick = () => {
+        const input = document.getElementById("tokenInput");
+        const v = input && input.value ? input.value.trim() : "";
+        const msg = document.getElementById("setTokenMsg");
+        if (!v) {
+          if (msg) { msg.textContent = lang === "zh" ? "请先生成或输入 Token" : "Generate or enter a token first"; msg.className = "status err"; }
+          return;
+        }
+        copyTextToClipboard(v).then((ok) => {
+          if (!msg) return;
+          if (ok) {
+            msg.textContent = lang === "zh" ? "已复制到剪贴板" : "Copied to clipboard";
+            msg.className = "status ok";
+            setTimeout(() => { msg.textContent = ""; }, 2500);
+          } else {
+            msg.textContent = lang === "zh" ? "复制失败（浏览器限制）。请手动全选上方输入框后 Ctrl+C" : "Copy failed. Select the token in the box and press Ctrl+C";
+            msg.className = "status err";
+          }
+        });
+      };
+      document.getElementById("btnClearTokenInput").onclick = () => {
+        const input = document.getElementById("tokenInput");
+        if (input) input.value = "";
+        const msg = document.getElementById("setTokenMsg");
+        if (msg) { msg.textContent = ""; msg.className = "status"; }
+      };
+      var tokenToggle = block.querySelector(".toggle-pwd[data-for=\"tokenInput\"]");
+      if (tokenToggle) tokenToggle.addEventListener("click", function() {
+        var el = document.getElementById("tokenInput");
+        if (!el) return;
+        var isPwd = el.type === "password";
+        el.type = isPwd ? "text" : "password";
+        tokenToggle.setAttribute("data-showing", isPwd ? "1" : "0");
+        tokenToggle.classList.toggle("pwd-visible", isPwd);
+        tokenToggle.setAttribute("aria-label", isPwd ? t("togglePwdHide") : t("togglePwdShow"));
+      });
+    }
+
+    async function clearDeviceToken() {
+      if (!confirm("确定要清除设备上的 Token 并登出？清除后需重新设置 Token。")) return;
+      try {
+        await api("DELETE", "/api/token");
+        token = "";
+        localStorage.removeItem("openclaw_management_token");
+        setSettingsLocked(true);
+        const s = await getStatusNoAuth();
+        renderTokenBlock(s.tokenSet, false);
+        document.getElementById("gatewayStatus").textContent = "已清除设备 Token。请在上方重新设置或输入 Token。";
+        document.getElementById("gatewayStatus").className = "status";
+      } catch (e) {
+        toast("gateway", "清除失败: " + e.message);
+      }
+    }
+
+    async function clearAllAccounts() {
+      if (!confirm("确定要清除所有帐号信息？将清除 Gateway Token、飞书 appId/appSecret、大模型 API Key、记忆 API Key；清除后需重新设置 Token 并登入。")) return;
+      try {
+        await api("POST", "/api/clear-all-accounts");
+        token = "";
+        localStorage.removeItem("openclaw_management_token");
+        setSettingsLocked(true);
+        const s = await getStatusNoAuth();
+        renderTokenBlock(s.tokenSet, false);
+        document.getElementById("gatewayStatus").textContent = lang === "zh" ? "已清除 Gateway Token、飞书及大模型/记忆密钥。请在上方重新设置 Token。" : "Gateway token, Feishu and LLM/memory keys cleared. Please set token above.";
+        document.getElementById("gatewayStatus").className = "status ok";
+      } catch (e) {
+        toast("gateway", "清除失败: " + e.message);
+      }
+    }
+
+    async function showKeysFinal() {
+      const box = document.getElementById("keysFinalBox");
+      if (!box) return;
+      if (box.style.display === "block" && box.dataset.loaded === "1") {
+        box.style.display = "none";
+        return;
+      }
+      const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const eyeSvg = (show) => show
+        ? "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>"
+        : "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 01 5.06-5.94M9.9 4.24A9.12 9.12 01 12 4c7 0 11 8 11 8a18.5 18.5 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24\"/><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"/></svg>";
+      box.style.display = "block";
+      box.innerHTML = lang === "zh" ? "加载中…" : "Loading…";
+      try {
+        const r = await api("GET", "/api/keys-final");
+        const keys = r.keys || [];
+        if (keys.length === 0) {
+          box.innerHTML = "<p class=\"help\">" + (lang === "zh" ? "当前无 Key 或未配置。" : "No keys or not configured.") + "</p>";
+        } else {
+          box._keysData = keys;
+          const colValue = lang === "zh" ? "值" : "Value";
+          let table = "<table style=\"width:100%; border-collapse:collapse; font-size:0.9rem;\"><thead><tr><th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border);\">" + (lang === "zh" ? "键名" : "Key") + "</th><th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border);\">" + (lang === "zh" ? "存储位置" : "Storage") + "</th><th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border);\">" + colValue + "</th></tr></thead><tbody>";
+          keys.forEach((row, idx) => {
+            const hasSecret = row.valueRaw != null;
+            const valDisplay = escapeHtml(String(row.value));
+            const valCell = hasSecret
+              ? "<span class=\"key-val-text\">" + valDisplay + "</span> <button type=\"button\" class=\"key-val-toggle\" data-idx=\"" + idx + "\" title=\"" + (lang === "zh" ? "显示/隐藏" : "Show/Hide") + "\" aria-label=\"" + (lang === "zh" ? "切换显示" : "Toggle visibility") + "\">" + eyeSvg(true) + "</button>"
+              : "<span class=\"key-val-text\">" + valDisplay + "</span>";
+            table += "<tr><td style=\"padding:6px 8px; border-bottom:1px solid var(--border);\">" + escapeHtml(row.key) + "</td><td style=\"padding:6px 8px; border-bottom:1px solid var(--border);\">" + escapeHtml(row.storage) + "</td><td style=\"padding:6px 8px; border-bottom:1px solid var(--border); font-family:monospace; vertical-align:middle;\">" + valCell + "</td></tr>";
+          });
+          table += "</tbody></table>";
+          box.innerHTML = table;
+          box.querySelectorAll(".key-val-toggle").forEach((btn) => {
+            btn.addEventListener("click", function() {
+              const span = this.previousElementSibling;
+              if (!span || !span.classList.contains("key-val-text")) return;
+              const data = box._keysData;
+              const idx = parseInt(this.getAttribute("data-idx"), 10);
+              if (!data || isNaN(idx) || !data[idx]) return;
+              const row = data[idx];
+              const hidden = this.getAttribute("aria-pressed") !== "true";
+              const text = hidden && row.valueRaw != null ? row.valueRaw : String(row.value);
+              span.textContent = text;
+              this.innerHTML = eyeSvg(!hidden);
+              this.setAttribute("aria-pressed", hidden ? "true" : "false");
+              this.title = (hidden ? (lang === "zh" ? "点击隐藏" : "Click to hide") : (lang === "zh" ? "点击显示" : "Click to show"));
+            });
+          });
+        }
+        box.dataset.loaded = "1";
+      } catch (e) {
+        box.innerHTML = "<p class=\"status err\">" + (lang === "zh" ? "加载失败：" : "Load failed: ") + escapeHtml(e.message) + "</p>";
+      }
+    }
+
+    async function loadStatus() {
+      const s = await getStatusNoAuth();
+      const gs = document.getElementById("gatewayStatus");
+      if (!s.tokenSet) {
+        setSettingsLocked(false);
+        renderTokenBlock(false, false);
+        if (gs) { gs.textContent = "未检测到设备 Token，可直接填写下方配置并在此设置 Token。"; gs.className = "status"; }
+        return;
+      }
+      if (!token) {
+        setSettingsLocked(true);
+        renderTokenBlock(true, false);
+        if (gs) { gs.textContent = ""; gs.className = "status"; }
+        return;
+      }
+      try {
+        await api("GET", "/api/config");
+        setSettingsLocked(false);
+        renderTokenBlock(true, true);
+        await loadConfig();
+        if (gs) {
+          gs.textContent = s.gatewayReachable ? "Gateway 连接正常 (" + (s.stateDir || "") + ")" : "Gateway 未响应，请确认 AmyClaw gateway 已启动";
+          gs.className = "status " + (s.gatewayReachable ? "ok" : "err");
+        }
+      } catch (e) {
+        if (e.message && e.message.includes("未授权")) {
+          token = "";
+          localStorage.removeItem("openclaw_management_token");
+          setSettingsLocked(true);
+          renderTokenBlock(true, false);
+          if (gs) { gs.textContent = ""; gs.className = "status"; }
+        } else {
+          if (gs) { gs.textContent = "读取配置失败: " + e.message; gs.className = "status err"; }
+        }
+      }
+    }
+
+    async function submitSetToken() {
+      const raw = document.getElementById("tokenInput").value.trim();
+      const body = raw ? { token: raw } : { generate: true };
+      try {
+        const data = await fetch(API + "/api/set-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }).then((r) => r.json());
+        if (data.error) throw new Error(data.error);
+        token = data.token;
+        localStorage.setItem("openclaw_management_token", token);
+        document.getElementById("setTokenMsg").textContent = "Token 已设置，正在加载配置…";
+        document.getElementById("setTokenMsg").className = "status ok";
+        setTimeout(() => loadStatus(), 500);
+      } catch (e) {
+        document.getElementById("setTokenMsg").textContent = "失败: " + e.message;
+        document.getElementById("setTokenMsg").className = "status err";
+      }
+    }
+
+    async function loadConfigSummary() {
+      if (!token) return;
+      try {
+        const s = await api("GET", "/api/config-summary");
+        const pre = document.getElementById("configSummaryBody");
+        const section = document.getElementById("configSummarySection");
+        if (pre && section) {
+          const lines = [];
+          if (s.localIps && s.localIps.length) {
+            lines.push((lang === "zh" ? "本机 IPv4" : "Local IPv4") + ": " + s.localIps.map(function (x) { return x.address + " (" + x.iface + ")"; }).join(", "));
+          } else {
+            lines.push((lang === "zh" ? "本机 IPv4" : "Local IPv4") + ": —");
+          }
+          if (s.feishu) lines.push("飞书: appId=" + s.feishu.appId + ", domain=" + s.feishu.domain + ", 密钥=" + (s.feishu.hasSecret ? "已配置" : "未配置"));
+          else lines.push("飞书: 未配置");
+          if (s.idatabase) lines.push("大模型(idatabase): baseUrl=" + s.idatabase.baseUrl + ", modelId=" + s.idatabase.modelId + ", API Key=" + (s.idatabase.hasApiKey ? "已配置" : "未配置"));
+          else lines.push("大模型(idatabase): 未配置");
+          if (s.moonshot) lines.push("Kimi(备用): modelId=" + (s.moonshot.modelId || "—") + ", API Key=" + (s.moonshot.hasApiKey ? "已配置" : "未配置") + (s.modelFallbacks && s.modelFallbacks.length ? ", fallback=" + s.modelFallbacks.join(", ") : ""));
+          else lines.push("Kimi(备用): 未配置");
+          if (s.memory) lines.push("向量(记忆): provider=" + s.memory.provider + ", model=" + s.memory.model + ", API Key=" + (s.memory.hasApiKey ? "已配置" : "未配置"));
+          else lines.push("向量(记忆): 未配置");
+          if (s.minimax) lines.push("Minimax: API Key=" + (s.minimax.hasApiKey ? "已配置" : "未配置"));
+          else lines.push("Minimax: 未配置");
+          if (s.primaryModel) lines.push("主模型: " + s.primaryModel);
+          if (s.envKeysPresent && s.envKeysPresent.length) lines.push("环境密钥(已配置): " + s.envKeysPresent.join(", "));
+          if (s.envKeysMissing && s.envKeysMissing.length) lines.push("以下密钥已从环境中删除: " + s.envKeysMissing.join(", "));
+          pre.textContent = lines.join("\n");
+          section.style.display = "block";
+        }
+      } catch (_) {}
+    }
+
+    async function loadConfig() {
+      if (!token) return;
+      try {
+        const cfg = await api("GET", "/api/config");
+        document.getElementById("gatewayPort").value = cfg.gateway?.port ?? 18789;
+        document.getElementById("gatewayBind").value = cfg.gateway?.bind ?? "loopback";
+        const feishu = cfg.channels?.feishu;
+        const feishuIdEl = document.getElementById("feishuAppId");
+        const feishuSecretEl = document.getElementById("feishuAppSecret");
+        const feishuDomainEl = document.getElementById("feishuDomain");
+        if (feishu?.accounts) {
+          const first = Object.values(feishu.accounts)[0];
+          if (first) {
+            if (feishuIdEl) feishuIdEl.value = first.appId || "";
+            if (feishuSecretEl) feishuSecretEl.value = typeof first.appSecret === "string" ? first.appSecret : "";
+            if (feishuDomainEl) feishuDomainEl.value = feishu.domain || "feishu";
+          } else {
+            if (feishuIdEl) feishuIdEl.value = "";
+            if (feishuSecretEl) feishuSecretEl.value = "";
+            if (feishuDomainEl) feishuDomainEl.value = feishu.domain || "feishu";
+          }
+        }
+        const idatabase = cfg.models?.providers?.idatabase;
+        const google = cfg.models?.providers?.google;
+        const mem = cfg.agents?.defaults?.memorySearch;
+        const minimax = cfg.models?.providers?.minimax;
+        const llmProvider = idatabase || google;
+        const idatabaseApiKeyEl = document.getElementById("idatabaseApiKey");
+        if (llmProvider) document.getElementById("idatabaseBaseUrl").value = "https://api.idatabase.ai";
+        var llmVal = "", memVal = "", mmVal = "", kimiVal = "";
+        try {
+          const secrets = await api("GET", "/api/resolved-secrets");
+          llmVal = (secrets.llmApiKey != null && String(secrets.llmApiKey).trim()) ? String(secrets.llmApiKey) : "";
+          memVal = (secrets.memoryApiKey != null && String(secrets.memoryApiKey).trim()) ? String(secrets.memoryApiKey) : "";
+          mmVal = (secrets.minimaxApiKey != null && String(secrets.minimaxApiKey).trim()) ? String(secrets.minimaxApiKey) : "";
+          kimiVal = (secrets.moonshotApiKey != null && String(secrets.moonshotApiKey).trim()) ? String(secrets.moonshotApiKey) : "";
+        } catch (_) {}
+        if (!llmVal && (idatabase && typeof idatabase.apiKey === "string") && idatabase.apiKey.trim()) llmVal = idatabase.apiKey.trim();
+        if (!llmVal && (google && typeof google.apiKey === "string") && google.apiKey.trim()) llmVal = google.apiKey.trim();
+        if (!memVal && mem && mem.remote && typeof mem.remote.apiKey === "string" && mem.remote.apiKey.trim()) memVal = mem.remote.apiKey.trim();
+        if (!mmVal && minimax && typeof minimax.apiKey === "string" && minimax.apiKey.trim()) mmVal = minimax.apiKey.trim();
+        idatabaseApiKeyEl.value = llmVal;
+        idatabaseApiKeyEl.placeholder = llmVal ? "已配置则留空不修改" : "请填写 API Key 后保存本块";
+        document.getElementById("memoryApiKey").value = memVal;
+        document.getElementById("memoryApiKey").placeholder = memVal ? "已配置则留空不修改" : "请填写 API Key 后保存本块";
+        document.getElementById("minimaxApiKey").value = mmVal;
+        document.getElementById("minimaxApiKey").placeholder = mmVal ? "已配置则留空不修改" : "请填写 API Key 后保存本块";
+        const kimiApiKeyEl = document.getElementById("kimiApiKey");
+        if (kimiApiKeyEl) {
+          kimiApiKeyEl.value = kimiVal;
+          kimiApiKeyEl.placeholder = kimiVal ? "已配置则留空不修改" : "请填写 API Key 后保存本块";
+        }
+        const fallbacks = cfg.agents?.defaults?.model?.fallbacks || [];
+        const kimiFallback = fallbacks.find(function(f) { return f && f.startsWith("moonshot/"); });
+        const kimiModelEl = document.getElementById("kimiModel");
+        if (kimiModelEl && kimiFallback) kimiModelEl.value = kimiFallback;
+        const primary = cfg.agents?.defaults?.model?.primary;
+        const primaryEl = document.getElementById("primaryModel");
+        if (primary && primaryEl) {
+          primaryEl.value = primary;
+          if (!Array.from(primaryEl.options).some(function(o) { return o.value === primary; })) {
+            var opt = document.createElement("option");
+            opt.value = primary;
+            opt.textContent = primary.indexOf("/") >= 0 ? primary.split("/").pop() : primary;
+            primaryEl.appendChild(opt);
+          }
+        }
+        if (mem) {
+          document.getElementById("memoryBaseUrl").value = mem.remote && mem.remote.baseUrl ? mem.remote.baseUrl : "https://api.idatabase.ai/v1/";
+          var memSel = document.getElementById("memoryModel");
+          var m = mem.model || "text-embedding-005";
+          if (memSel) {
+            memSel.value = m;
+            if (!Array.from(memSel.options).some(function(o) { return o.value === m; })) {
+              var o = document.createElement("option"); o.value = m; o.textContent = m; memSel.appendChild(o);
+            }
+          }
+        }
+        const minimaxApiKeyEl = document.getElementById("minimaxApiKey");
+        if (!minimax && minimaxApiKeyEl) minimaxApiKeyEl.value = "";
+        const cur = document.getElementById("currentToken");
+        if (cur) cur.textContent = token;
+        await loadConfigSummary();
+      } catch (e) {
+        document.getElementById("gatewayStatus").textContent = "读取配置失败: " + e.message;
+        document.getElementById("gatewayStatus").className = "status err";
+      }
+    }
+
+    document.querySelectorAll("[data-save]").forEach((el) => {
+      const sectionId = el.getAttribute("data-save");
+      el.addEventListener("blur", () => scheduleSave(sectionId));
+      el.addEventListener("change", () => scheduleSave(sectionId));
+    });
+    document.querySelectorAll("[data-clear]").forEach((btn) => {
+      btn.addEventListener("click", () => clearSection(btn.getAttribute("data-clear")));
+    });
+    document.querySelectorAll(".toggle-pwd").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-for");
+        const el = document.getElementById(id);
+        if (!el) return;
+        const isPwd = el.type === "password";
+        el.type = isPwd ? "text" : "password";
+        btn.setAttribute("data-showing", isPwd ? "1" : "0");
+        btn.classList.toggle("pwd-visible", isPwd);
+        btn.setAttribute("aria-label", isPwd ? t("togglePwdHide") : t("togglePwdShow"));
+      });
+    });
+    document.querySelectorAll("[data-save-btn]").forEach((btn) => {
+      btn.addEventListener("click", () => saveSection(btn.getAttribute("data-save-btn")));
+    });
+
+    document.getElementById("btnSaveAll").onclick = async () => {
+      const msg = document.getElementById("saveMsg");
+      if (msg) msg.textContent = lang === "zh" ? "正在保存…" : "Saving…";
+      let err = 0;
+      for (const sectionId of SECTIONS) {
+        try {
+          await saveSection(sectionId);
+        } catch (e) {
+          err++;
+          toast(sectionId, (lang === "zh" ? "保存失败: " : "Save failed: ") + e.message);
+        }
+      }
+      if (msg) {
+        msg.textContent = err
+          ? (lang === "zh" ? "部分保存失败，请查看各块提示。" : "Some blocks failed.")
+          : (lang === "zh" ? "全部保存完成，配置与密钥已写入；Gateway 将自动热加载。" : "All saved. Config and keys written; gateway will hot-reload.");
+        msg.className = "status " + (err ? "err" : "ok");
+      }
+    };
+
+    document.getElementById("btnRestartGateway").onclick = async () => {
+      const btn = document.getElementById("btnRestartGateway");
+      const msg = document.getElementById("saveMsg");
+      const toastEl = document.getElementById("toast-save-all");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.textContent = lang === "zh" ? "正在重启网关…" : "Restarting gateway…"; msg.className = "status"; }
+      if (toastEl) toastEl.textContent = "";
+      try {
+        const url = (API || window.location?.origin || "") + "/api/gateway-restart";
+        const r = await fetch(url, { method: "POST", headers: { Authorization: "Bearer " + token } });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (r.status === 404) throw new Error(lang === "zh" ? "接口不存在：请在本机执行 sudo systemctl restart openclaw-management 后刷新本页" : "Not found: run sudo systemctl restart openclaw-management and refresh");
+          throw new Error(data.error || data.message || r.statusText);
+        }
+        if (msg) { msg.textContent = lang === "zh" ? "Gateway 重启已执行，请稍候再试连接。" : "Gateway restart sent. Please retry in a moment."; msg.className = "status ok"; }
+        if (toastEl) toastEl.textContent = lang === "zh" ? "已执行重启" : "Restart sent";
+      } catch (e) {
+        if (msg) { msg.textContent = (lang === "zh" ? "重启失败: " : "Restart failed: ") + (e?.message || e); msg.className = "status err"; }
+        if (toastEl) toastEl.textContent = (lang === "zh" ? "失败: " : "Failed: ") + (e?.message || e);
+      }
+      if (btn) btn.disabled = false;
+    };
+
+    document.getElementById("btnChangeToken").onclick = () => {
+      document.getElementById("gatewayChangeTokenBox").style.display = "block";
+      document.getElementById("newTokenInput").value = "";
+      document.getElementById("newTokenInput").focus();
+    };
+    document.getElementById("btnCancelNewToken").onclick = () => {
+      document.getElementById("gatewayChangeTokenBox").style.display = "none";
+    };
+    document.getElementById("btnConfirmNewToken").onclick = async () => {
+      const raw = document.getElementById("newTokenInput").value.trim();
+      if (!raw) return;
+      try {
+        const data = await fetch(API + "/api/set-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: raw }),
+        }).then((r) => r.json());
+        if (data.error) throw new Error(data.error);
+        token = data.token;
+        localStorage.setItem("openclaw_management_token", token);
+        document.getElementById("gatewayChangeTokenBox").style.display = "none";
+        const cur = document.getElementById("currentToken");
+        if (cur) cur.textContent = token;
+        toast("gateway", lang === "zh" ? "Token 已更新" : "Token updated");
+      } catch (e) {
+        toast("gateway", (lang === "zh" ? "更新失败: " : "Update failed: ") + e.message);
+      }
+    };
+
+    document.getElementById("btnTestIdatabase").onclick = async () => {
+      const baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
+      const apiKey = document.getElementById("idatabaseApiKey").value.trim();
+      const primaryVal = document.getElementById("primaryModel").value.trim() || "google/gemini-3.1-flash-lite-preview";
+      const model = primaryVal.replace(/^(google|idatabase)\//, "");
+      try {
+        const data = await api("POST", "/api/test-idatabase", { baseUrl, apiKey: apiKey || undefined, model });
+        toast("idatabase", data.ok ? (lang === "zh" ? "连通正常" : "OK") : (data.error || ""));
+      } catch (e) {
+        toast("idatabase", (lang === "zh" ? "请求失败: " : "Request failed: ") + e.message);
+      }
+    };
+    document.getElementById("btnTestKimi").onclick = async () => {
+      const apiKey = document.getElementById("kimiApiKey").value.trim();
+      const modelVal = document.getElementById("kimiModel").value || "moonshot/kimi-k2.5";
+      const model = modelVal.replace(/^moonshot\//, "");
+      try {
+        const data = await api("POST", "/api/test-moonshot", { apiKey: apiKey || undefined, model });
+        toast("kimi", data.ok ? (lang === "zh" ? "连通正常" : "OK") : (data.error || ""));
+      } catch (e) {
+        toast("kimi", (lang === "zh" ? "请求失败: " : "Request failed: ") + e.message);
+      }
+    };
+
+    document.getElementById("btnTestFeishu").onclick = async () => {
+      const appId = document.getElementById("feishuAppId").value.trim();
+      const appSecret = document.getElementById("feishuAppSecret").value.trim();
+      const domain = document.getElementById("feishuDomain").value.trim() || "feishu";
+      if (!appId || !appSecret) {
+        toast("feishu", lang === "zh" ? "请先填写应用 ID 和应用密钥" : "Enter App ID and App Secret first");
+        return;
+      }
+      try {
+        const data = await api("POST", "/api/test-feishu", { appId, appSecret, domain });
+        toast("feishu", data.ok ? (data.message || (lang === "zh" ? "凭证有效" : "OK")) : (data.error || ""));
+      } catch (e) {
+        toast("feishu", (lang === "zh" ? "请求失败: " : "Request failed: ") + e.message);
+      }
+    };
+    document.getElementById("btnTestMemory").onclick = async () => {
+      const baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
+      const model = document.getElementById("memoryModel").value || "text-embedding-005";
+      const apiKey = document.getElementById("memoryApiKey").value.trim();
+      try {
+        const data = await api("POST", "/api/test-memory", { baseUrl, model, apiKey: apiKey || undefined });
+        toast("memory", data.ok ? (lang === "zh" ? "连通正常" : "OK") : (data.error || ""));
+      } catch (e) {
+        toast("memory", (lang === "zh" ? "请求失败: " : "Request failed: ") + e.message);
+      }
+    };
+
+    document.getElementById("btnFetchModels").onclick = async () => {
+      const baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
+      const apiKey = document.getElementById("idatabaseApiKey").value.trim();
+      try {
+        const data = await api("POST", "/api/models-list", { baseUrl, apiKey: apiKey || undefined, apiStyle: "v1beta" });
+        const sel = document.getElementById("primaryModel");
+        sel.innerHTML = "";
+        var placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = t("placeholderFetchModelsFirst");
+        sel.appendChild(placeholder);
+        (data.models || []).forEach(function(m) {
+          var id = (m.id || m.model || m.name || "").trim();
+          if (!id) return;
+          var prefix = (m.providerPrefix && m.providerPrefix.trim()) ? m.providerPrefix.trim() : "idatabase";
+          var opt = document.createElement("option");
+          opt.value = prefix + "/" + id;
+          opt.textContent = id;
+          sel.appendChild(opt);
+        });
+        toast("idatabase", data.error ? data.error : (lang === "zh" ? "已拉取 " + (data.models && data.models.length) + " 个模型" : "Loaded " + (data.models && data.models.length) + " models"));
+      } catch (e) {
+        toast("idatabase", (lang === "zh" ? "获取失败: " : "Fetch failed: ") + e.message);
+      }
+    };
+
+    document.getElementById("btnFetchEmbeddingModels").onclick = async () => {
+      const baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
+      const apiKey = document.getElementById("memoryApiKey").value.trim();
+      try {
+        const data = await api("POST", "/api/models-list", { baseUrl, apiKey: apiKey || undefined });
+        const sel = document.getElementById("memoryModel");
+        var cur = sel.value;
+        sel.innerHTML = "";
+        (data.models || []).forEach(function(m) {
+          var id = m.id || m.model || m.name || "";
+          if (!id) return;
+          var opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = id;
+          sel.appendChild(opt);
+        });
+        if (!cur || !Array.from(sel.options).some(function(o) { return o.value === cur; })) {
+          var def = document.createElement("option");
+          def.value = "text-embedding-005";
+          def.textContent = "text-embedding-005";
+          sel.insertBefore(def, sel.firstChild);
+          sel.value = "text-embedding-005";
+        } else sel.value = cur;
+        toast("memory", data.error ? data.error : (lang === "zh" ? "已拉取 " + (data.models && data.models.length) + " 个模型" : "Loaded " + (data.models && data.models.length) + " models"));
+      } catch (e) {
+        toast("memory", (lang === "zh" ? "获取失败: " : "Fetch failed: ") + e.message);
+      }
+    };
+
+    document.getElementById("btnLang").onclick = () => {
+      lang = lang === "zh" ? "en" : "zh";
+      localStorage.setItem("openclaw_lang", lang);
+      applyLang();
+    };
+
+    let upgradeUrlValue = "";
+    async function loadUrls() {
+      try {
+        const res = await fetch(API + "/api/urls");
+        const data = await res.json().catch(() => ({}));
+        const linkUpgrade = document.getElementById("linkUpgrade");
+        const linkRemote = document.getElementById("linkRemoteRegister");
+        if (linkUpgrade && data.upgradeUrl) { linkUpgrade.href = data.upgradeUrl; upgradeUrlValue = data.upgradeUrl; }
+        if (linkRemote && data.remoteRegisterUrl) linkRemote.href = data.remoteRegisterUrl;
+      } catch (_) {}
+    }
+
+    const UPGRADE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+    async function dailyUpgradeCheck() {
+      const last = parseInt(localStorage.getItem("openclaw_upgrade_last_check") || "0", 10);
+      if (Date.now() - last < UPGRADE_CHECK_INTERVAL_MS) {
+        if (localStorage.getItem("openclaw_upgrade_available") === "1") showUpgradeBadge(true);
+        return;
+      }
+      try {
+        const verRes = await fetch(API + "/api/version");
+        const verData = await verRes.json().catch(() => ({}));
+        const currentVersion = verData.version || "0.0.0";
+        if (token) {
+          const checkRes = await fetch(API + "/api/upgrade-check", { method: "POST", headers: headers(), body: JSON.stringify({}) });
+          const checkData = await checkRes.json().catch(() => ({}));
+          const latest = checkData.response && checkData.response.latestVersion;
+          if (latest && typeof latest === "string" && latest !== currentVersion) {
+            localStorage.setItem("openclaw_upgrade_available", "1");
+            showUpgradeBadge(true);
+          } else {
+            localStorage.setItem("openclaw_upgrade_available", "0");
+            showUpgradeBadge(false);
+          }
+        }
+        localStorage.setItem("openclaw_upgrade_last_check", String(Date.now()));
+      } catch (_) {
+        localStorage.setItem("openclaw_upgrade_last_check", String(Date.now()));
+      }
+    }
+    function showUpgradeBadge(show) {
+      const badge = document.getElementById("upgradeBadge");
+      if (badge) badge.style.display = show ? "inline-block" : "none";
+    }
+
+    function validatePasswordRule(p) {
+      if (!p || p.length < 8) return (lang === "zh" ? "密码不少于 8 位" : "At least 8 characters");
+      if (!/[a-z]/.test(p)) return (lang === "zh" ? "需包含小写字母" : "Include lowercase letter");
+      if (!/[A-Z]/.test(p)) return (lang === "zh" ? "需包含大写字母" : "Include uppercase letter");
+      if (!/\d/.test(p)) return (lang === "zh" ? "需包含数字" : "Include digit");
+      return "";
+    }
+    async function loadSystemUsers() {
+      try {
+        const data = await api("GET", "/api/system/users", null);
+        const el = document.getElementById("systemStandardUsername");
+        if (el && data.standardUser) el.textContent = data.standardUser;
+      } catch (_) {}
+    }
+    function setSystemPasswordToast(which, msg, isErr) {
+      const id = which === "root" ? "toast-root-password" : "toast-user-password";
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg || ""; el.style.color = isErr ? "var(--danger)" : "var(--success)"; setTimeout(() => { el.textContent = ""; }, 4000); }
+    }
+    document.getElementById("btnChangeRootPassword").onclick = async function () {
+      const newP = document.getElementById("systemPasswordRootNew").value;
+      const conf = document.getElementById("systemPasswordRootConfirm").value;
+      const err = validatePasswordRule(newP);
+      if (err) { setSystemPasswordToast("root", err, true); return; }
+      if (newP !== conf) { setSystemPasswordToast("root", lang === "zh" ? "两次输入不一致" : "Passwords do not match", true); return; }
+      try {
+        await api("POST", "/api/system/change-password", { user: "root", password: newP });
+        setSystemPasswordToast("root", lang === "zh" ? "root 密码已更新" : "Root password updated");
+        document.getElementById("systemPasswordRootNew").value = "";
+        document.getElementById("systemPasswordRootConfirm").value = "";
+      } catch (e) {
+        setSystemPasswordToast("root", e.message || "Failed", true);
+      }
+    };
+    document.getElementById("btnChangeUserPassword").onclick = async function () {
+      const usernameEl = document.getElementById("systemStandardUsername");
+      const user = usernameEl ? usernameEl.textContent.trim() : "";
+      if (!user || user === "—") { setSystemPasswordToast("user", lang === "zh" ? "无法获取用户名" : "Cannot get username", true); return; }
+      const newP = document.getElementById("systemPasswordUserNew").value;
+      const conf = document.getElementById("systemPasswordUserConfirm").value;
+      const err = validatePasswordRule(newP);
+      if (err) { setSystemPasswordToast("user", err, true); return; }
+      if (newP !== conf) { setSystemPasswordToast("user", lang === "zh" ? "两次输入不一致" : "Passwords do not match", true); return; }
+      try {
+        await api("POST", "/api/system/change-password", { user: user, password: newP });
+        setSystemPasswordToast("user", (lang === "zh" ? "用户 " : "User ") + user + (lang === "zh" ? " 密码已更新" : " password updated"));
+        document.getElementById("systemPasswordUserNew").value = "";
+        document.getElementById("systemPasswordUserConfirm").value = "";
+      } catch (e) {
+        setSystemPasswordToast("user", e.message || "Failed", true);
+      }
+    };
+
+    function routeHash() {
+      const isUpgrade = (location.hash || "").replace(/^#/, "") === "upgrade";
+      const mainContent = document.getElementById("mainContent");
+      const upgradePanel = document.getElementById("upgradePanel");
+      if (mainContent) mainContent.style.display = isUpgrade ? "none" : "";
+      if (upgradePanel) upgradePanel.style.display = isUpgrade ? "block" : "none";
+      if (isUpgrade) loadUpgradePanelVersion();
+    }
+    async function loadUpgradePanelVersion() {
+      try {
+        const res = await fetch(API + "/api/version");
+        const data = await res.json().catch(() => ({}));
+        const el = document.getElementById("upgradePanelVersion");
+        if (el) el.textContent = data.version || "—";
+      } catch (_) {
+        const el = document.getElementById("upgradePanelVersion");
+        if (el) el.textContent = "—";
+      }
+    }
+    document.getElementById("linkUpgrade").addEventListener("click", function (e) {
+      if (localStorage.getItem("openclaw_upgrade_available") === "1") {
+        e.preventDefault();
+        location.hash = "upgrade";
+      }
+    });
+    window.addEventListener("hashchange", routeHash);
+
+    document.getElementById("btnUpgradeCheckEnv").onclick = async function () {
+      const resultEl = document.getElementById("upgradeQualifyResult");
+      const agreeBtn = document.getElementById("btnUpgradeAgree");
+      if (resultEl) { resultEl.style.display = "block"; resultEl.textContent = lang === "zh" ? "检测中…" : "Checking…"; resultEl.className = "status"; }
+      if (agreeBtn) agreeBtn.style.display = "none";
+      try {
+        const data = await api("POST", "/api/upgrade-qualify", {});
+        if (resultEl) {
+          resultEl.textContent = data.message || (data.qualify ? (lang === "zh" ? "环境校验通过，可升级。" : "Environment qualified.") : (lang === "zh" ? "环境未通过校验。" : "Environment not qualified."));
+          resultEl.classList.toggle("ok", !!data.qualify);
+          resultEl.classList.toggle("err", !data.qualify);
+        }
+        if (agreeBtn && data.qualify) agreeBtn.style.display = "inline-block";
+      } catch (e) {
+        if (resultEl) { resultEl.textContent = e.message || "Request failed"; resultEl.className = "status err"; }
+      }
+    };
+    document.getElementById("btnUpgradeAgree").onclick = function () {
+      if (upgradeUrlValue) window.open(upgradeUrlValue, "_blank", "noopener");
+    };
+    document.getElementById("btnUpgradeBack").onclick = function () { location.hash = ""; };
+
+    document.getElementById("btnRefreshSummary").onclick = () => loadConfig();
+
+    (async () => {
+      applyLang();
+      fetch(API + "/api/version").then((r) => r.json()).then((d) => {
+        const el = document.getElementById("headerVersion");
+        if (el && d.version) el.textContent = "V" + d.version;
+      }).catch(() => {});
+      await loadUrls();
+      routeHash();
+      await loadStatus();
+      if (token) {
+        await loadConfig();
+        await loadSystemUsers();
+      }
+      await dailyUpgradeCheck();
+    })();
+  </script>
+</body>
+</html>

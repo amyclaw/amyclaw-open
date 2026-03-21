@@ -1,0 +1,9 @@
+# 可选：用于 eggs dad --file 的配置示例
+# 用法: sudo eggs dad --file /mnt/disk/amyclaw/docs/penguins-eggs/eggs-dad-example.yaml
+#
+# 若不需要固定 root/Live 用户密码，可删除 root_passwd / user_opt / user_opt_passwd 三行
+
+snapshot_dir: /mnt/backup
+root_passwd: amyclaw20260315
+user_opt: amyclaw
+user_opt_passwd: amyclaw20260315
