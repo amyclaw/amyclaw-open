@@ -13,11 +13,15 @@ node server.js
 - 默认监听 `0.0.0.0:8080`，可通过环境变量 **MANAGEMENT_PORT** 修改。
 - 依赖 **OPENCLAW_STATE_DIR**（默认 `~/.openclaw`）定位 `openclaw.json` 与 `.env`；与 OpenClaw Gateway 使用同一状态目录。
 
-## 首次访问
+## 首次访问与 Gateway Token
 
 1. 浏览器打开 `http://<本机IP>:8080`。
-2. 若尚未设置 Token：选择「自动生成」或手动填写，点击「确认并保存」。Token 会同时写入 **`openclaw.json`**（`gateway.auth.token` / `gateway.remote.token`）、**`data/token.txt`**（管理端登录）与 **`.env` 的 `OPENCLAW_GATEWAY_TOKEN`**，与本进程 `process.env` 对齐，避免与 CLI、引用 `EnvironmentFile` 的 systemd 服务不一致。
-3. 进入设置页后，可修改 Gateway、飞书、企业微信桥接、idatabase.ai、向量、Minimax 等，点击「保存本块」或「**保存全部配置**」写回配置。**密钥与数据会同时写入**：API Key、飞书 App Secret 等写入 `OPENCLAW_STATE_DIR/.env`，并在 `openclaw.json` 中改为 env 引用（不落盘明文）；其余配置（端口、模型选择、飞书 App ID 等）写入 `openclaw.json`。**保存后 Gateway 会基于文件监听自动热加载**，无需重启即可生效（仅修改 Gateway 端口/绑定等少数项需重启网关）。
+2. **GET /api/status** 返回 **`gatewayTokenConfigured`**：本机 `openclaw.json` / `.env` 是否已有 Gateway Token。
+3. **首次（尚未配置 Gateway Token）**：可「自动生成」或手动填写，点击「确认并保存」。Token 会同时写入 **`openclaw.json`**（`gateway.auth.token` / `gateway.remote.token`）、**`data/token.txt`**（管理端会话）与 **`.env` 的 `OPENCLAW_GATEWAY_TOKEN`**。
+4. **已配置 Gateway Token 后**：下次访问须先输入**同一 Token**（或经「忘记 Token」验证）才能解锁全部配置与网关操作；**不允许在未清除的前提下再次「自动生成」新 Token**（**POST /api/set-token** 在 `generate: true` 且已存在 Gateway Token 时返回 400）。
+5. **忘记管理页 Token**：**POST /api/unlock-with-secret**（无需 Bearer）提交与设备配置一致的 **`llmApiKey`**（当前主模型 idatabase/Google 所用 Key）或 **`feishuAppSecret`** 之一，校验通过后服务端写入 `data/token.txt` 并返回 **`token`**（即现有 Gateway Token），浏览器据此登录。
+6. **安全重置 Gateway Token**：**GET /api/status** 含 **`canSafeResetGatewayToken`**：当本机已配置 Gateway Token，且**未**配置飞书 App Secret、也**未**配置任何大模型/记忆/备选模型相关 Key（与 `getResolvedSecrets` 一致）时为 `true`。此时可调用 **POST /api/safe-reset-gateway-token**（无需 Bearer）生成新 Gateway Token 并写回配置与 `.env`；若已存在任一类业务密钥则返回 400。用于尚未录入飞书/模型密钥、仅忘记 Gateway Token 的场景。
+6. 进入设置页后，可修改 Gateway、飞书、idatabase.ai、向量等，点击「保存本块」或「**保存全部配置**」。**保存后 Gateway 会基于文件监听自动热加载**（仅修改 Gateway 端口/绑定等少数项需重启网关）。
 
 ## 升级与远程注册（对接未来升级服务器）
 
@@ -40,8 +44,8 @@ node server.js
 | `STANDARD_USER_NAME` | 标准用户（普通用户）用户名，用于密码修改展示，默认 `amyclaw` |
 | `MANAGEMENT_PORT` | 管理服务端口；量产/镜像推荐 `8080`，开发热加载可用 `8000`，默认 `8080` |
 | `OPENCLAW_GATEWAY_URL` | Gateway 地址，默认 `http://127.0.0.1:18789` |
-| `UPGRADE_SERVICE_URL` | 升级服务地址，默认 `https://local.amyclaw.cn/upgrade` |
-| `REMOTE_MANAGEMENT_URL` | 远程管理网站，默认 `https://local.amyclaw.cn` |
+| `UPGRADE_SERVICE_URL` | 升级服务地址，默认 `https://local.amyclaw.ai/upgrade` |
+| `REMOTE_MANAGEMENT_URL` | 远程管理网站，默认 `https://local.amyclaw.ai` |
 
 ## 数据
 

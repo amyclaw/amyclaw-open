@@ -1,6 +1,6 @@
 # AmyClaw 系统量产克隆与使用说明
 
-**当前镜像版本：v2.0-release**（ISO 文件名形如 `amyclaw_v2.0-release_amd64_<日期时间>.iso`，由 `AMYCLAW_IMAGE_VERSION` 控制。）
+**当前镜像版本：v2.0.3**（ISO 文件名形如 `amyclaw_v2.0.3_amd64_<日期时间>.iso`，由 `AMYCLAW_IMAGE_VERSION` 控制。）
 
 基于 **Penguins' Eggs** 将当前系统打包为可启动 ISO，刻录 U 盘后在新机器上**无人值守**完成克隆安装，重启即可使用；后续仅需在管理终端填写飞书号、大模型密钥等即可投入使用。
 
@@ -10,9 +10,9 @@
 
 | 项目 | 说明 |
 |------|------|
-| **本次生成的 ISO** | eggs 默认名 **`amyclaw_amd64_<日期>_<时间>.iso`**；脚本会额外复制为 **`amyclaw_v2.0-release_amd64_<日期>_<时间>.iso`**（版本号由环境变量 `AMYCLAW_IMAGE_VERSION` 控制，默认 **v2.0-release**） |
+| **本次生成的 ISO** | eggs 默认名 **`amyclaw_amd64_<日期>_<时间>.iso`**；脚本会额外复制为 **`amyclaw_v2.0.3_amd64_<日期>_<时间>.iso`**（版本号由环境变量 `AMYCLAW_IMAGE_VERSION` 控制，默认 **v2.0.3**） |
 | **备份位置** | `/mnt/backup/`（体积随系统变化，约数 GB） |
-| **镜像版本标记** | 母机 **`/etc/amyclaw-release`**（`AMYCLAW_IMAGE_VERSION=v2.0-release`），打入 ISO 后克隆机可读 |
+| **镜像版本标记** | 母机 **`/etc/amyclaw-release`**（`AMYCLAW_IMAGE_VERSION=v2.0.3`），打入 ISO 后克隆机可读 |
 | **克隆后系统用户** | `amyclaw` / 密码见下方「默认账号」（母机打 ISO 前须执行 `set-oem-system-passwords.sh` 与 krill 模板，避免仍为 root/root） |
 | **安装行为** | 从 U 盘启动后自动执行克隆安装，完成后自动关机，无需操作员干预 |
 | **网络** | **DHCP** 取 IP；**DNS** 为 **DHCP + netplan 静态 nameservers 合并**，并配 **`resolved` 的 `DNS=`**；详见 `resolv-镜像说明.md`（若仅 ping IP 通、域名不通，亦可能是防火墙拦 UDP/53） |
@@ -22,6 +22,24 @@
 
 - **Live 环境**（仅 U 盘启动时）：用户 `live`，密码 `evolution`；root 密码 `evolution`。
 - **克隆安装后的系统**：用户 **`amyclaw`**，密码 **`amyclaw20260315`**；**root** 密码同为 **`amyclaw20260315`**（与 `eggs-dad-example.yaml`、`krill-amyclaw.yaml` 及 `set-oem-system-passwords.sh` 一致；**不是** root/root）。
+- **sudo**：标准用户 **`amyclaw` 须在 `sudo` 组**（打 ISO 前执行 `set-oem-system-passwords.sh` / `mother-image-prepare-for-amyclaw-iso.sh` 会自动 `usermod -aG sudo amyclaw`）。旧镜像若未包含该步骤，会出现「amyclaw is not in the sudoers file」。
+
+### 现场被锁：无 sudo、改不了 root、sshd 配不了
+
+| 现象 | 说明 |
+|------|------|
+| **`passwd` 改不了 root** | 普通用户执行 `passwd` **只改自己的密码**；改 root 须 **root 身份**（`sudo passwd root` 或控制台 root 登录）。 |
+| **SSH 下 root 登不上** | 常见为 **`PermitRootLogin`** 禁止密码登录，属正常加固；应 **`amyclaw` 登录 + `sudo`**。若 amyclaw **无 sudo**，则陷入死锁，见下表恢复。 |
+| **sshd 配置「不可编辑」** | 无 root 权限时无法写 `/etc/ssh/sshd_config`；若文件系统只读，先 **`mount -o remount,rw /`**（须 root）。 |
+
+**恢复思路（任选其一，均需能接触机器或 U 盘）：**
+
+1. **本机物理控制台用 root 登录**（TTY，非 SSH）：若 root 密码仍为 OEM 默认，登录后执行：  
+   `usermod -aG sudo amyclaw` → `passwd`（按需）→ 编辑 `sshd` → `systemctl restart ssh`。
+2. **GRUB 恢复模式 / 单用户**：启动菜单选 **Advanced → recovery mode** 或给内核加 **`init=/bin/bash`**，根分区 **`mount -o remount,rw /`** 后同样执行 `usermod -aG sudo amyclaw`、`passwd root` 等。
+3. **Live U 盘**：用同架构 ISO 启动，挂载目标机根分区，`chroot` 后执行上述命令（或直接从 Live 里编辑目标盘上的 `/etc/shadow`、`/etc/group`、`/etc/ssh/sshd_config.d/`）。
+
+**母机侧**：重新打 ISO 前务必执行已修复的 **`set-oem-system-passwords.sh`**（或整套 **`mother-image-prepare-for-amyclaw-iso.sh`**），避免再次下发无 sudo 的镜像。
 
 ---
 
@@ -42,20 +60,23 @@ sudo bash /mnt/disk/amyclaw/docs/penguins-eggs/deploy-to-opt.sh
 sudo bash /mnt/disk/amyclaw/scripts/apply-netplan-dhcp-oem.sh
 # 仅写入 DHCP 模板、不立即 apply：sudo APPLY_NETPLAN=0 bash /mnt/disk/amyclaw/scripts/apply-netplan-dhcp-oem.sh
 
-# 4) 写入镜像版本号（可选，默认 v2.0-release）
-echo "AMYCLAW_IMAGE_VERSION=v2.0-release" | sudo tee /etc/amyclaw-release
+# 4) 写入镜像版本号（可选，默认 v2.0.3）
+echo "AMYCLAW_IMAGE_VERSION=v2.0.3" | sudo tee /etc/amyclaw-release
 echo "BUILD_DATE=$(date -Iseconds)" | sudo tee -a /etc/amyclaw-release
 
 # 5) 生成 ISO 并复制到 /mnt/backup（带版本文件名）
-sudo AMYCLAW_IMAGE_VERSION=v2.0-release /mnt/disk/amyclaw/scripts/eggs-produce-and-backup.sh
+sudo AMYCLAW_IMAGE_VERSION=v2.0.3 /mnt/disk/amyclaw/scripts/eggs-produce-and-backup.sh
+
+# 或一键：写入 /etc/amyclaw-release 为 v2.0.3 并打 ISO（内部仍调用 eggs-produce-and-backup.sh）
+# sudo bash /mnt/disk/amyclaw/scripts/make-amyclaw-iso-v2.0.3.sh
 ```
 
-- 会生成新 ISO（eggs 默认名 + **`amyclaw_v2.0-release_amd64_日期时间.iso`**），并复制到 `/mnt/backup`。
+- 会生成新 ISO（eggs 默认名 + **`amyclaw_v2.0.3_amd64_日期时间.iso`**），并复制到 `/mnt/backup`。
 - **`deploy-to-opt.sh` 与量产可靠性**：克隆机**只有** `/opt/amyclaw`（`/mnt` 下开发仓库**不会**进 ISO）。母机打 ISO **前**必须成功执行 **`deploy-to-opt.sh`**；脚本会 **`pnpm ui:build`** 并把 **`dist/control-ui`** 一并 rsync 到 `/opt`，否则网关启动时会在目标机尝试自动构建 UI，常失败 → **18789 报 503**（与 8080 管理页、飞书通道是否配置**无直接关系**，但运维会误以为「镜像坏了」）。若故意跳过 UI，可设 **`AMYCLAW_SKIP_UI_BUILD=1`**（不推荐用于量产）。
 - **管理端版本不一致**（例如一台 `1.0.6`、一台 `1.0.11`）：说明 **`/opt/amyclaw/openclaw-management` 不是同一次 deploy**，或某台未随镜像更新；应在母机统一 **`deploy-to-opt.sh`** 后再装系统或重打 ISO。
 - **飞书「通道开但收不到消息」**：除开放平台与长连接外，须 **`plugins.entries.feishu.enabled`** 与 **`channels.feishu`** 一致；新版管理端在 **`PATCH /api/config`** 保存时会自动对齐。已写入旧配置的设备：升级管理端后**再保存一次飞书区块**，或手动改 JSON 后热加载/重启 Gateway。
 - 打包时 **不会** 包含 `/mnt` 下任何内容（代码、备份、下载等均排除）。
-- 若需在打包前清理缓存以减小体积，可编辑 `eggs-produce-and-backup.sh`，取消注释「安全清理」段中的 `apt-get clean`、`journalctl --vacuum-time=1d` 等行后再运行。
+- **打 ISO 前清理**：`eggs-produce-and-backup.sh` 默认会执行 **apt clean**、**journal 裁剪**、清理 **`/var/tmp/eggs/.../mnt` 内旧 ISO**；若需跳过，设 **`EGGS_CLEAN_BEFORE_ISO=0`**。
 - **`eggs-produce-and-backup.sh`** 会在打 ISO 前自动：**resolv 软链**、**FallbackDNS**、**把仓库 `netplan-50-dhcp.yaml` 写入 `/etc/netplan/`**（不强制 `netplan apply`）、并检查 **`/` 空闲 ≥ 约 4GiB**；步骤 3 仍建议执行以便母机本机网络与自检。
 
 ---
@@ -63,7 +84,7 @@ sudo AMYCLAW_IMAGE_VERSION=v2.0-release /mnt/disk/amyclaw/scripts/eggs-produce-a
 ## 三、刻录 U 盘启动盘
 
 1. **获取 ISO**  
-   从母机或备份处拷贝 **`amyclaw_v2.0-release_amd64_*.iso`**（或 eggs 默认生成的 `amyclaw_amd64_*.iso`）。
+   从母机或备份处拷贝 **`amyclaw_v2.0.3_amd64_*.iso`**（或 eggs 默认生成的 `amyclaw_amd64_*.iso`）。
 
 2. **刻录方式（任选其一）**
    - **Linux**：  
@@ -251,7 +272,7 @@ sudo fdisk -l
   用 root（密码同 amyclaw）登录后执行 `passwd amyclaw` 修改。
 
 - **需要更新镜像**  
-  在母机按 **「二、母机再次打包」** 全流程执行（至少 **`deploy-to-opt.sh`** + 写入 **`/etc/amyclaw-release`** + **`eggs-produce-and-backup.sh`**；默认 **`AMYCLAW_IMAGE_VERSION=v2.0-release`**）。勿只跑 `eggs produce` 而跳过 deploy，否则 `/opt/amyclaw` 可能不是最新。用生成于 **`/mnt/backup/`** 的新 ISO 重新刻录 U 盘即可。
+  在母机按 **「二、母机再次打包」** 全流程执行（至少 **`deploy-to-opt.sh`** + 写入 **`/etc/amyclaw-release`** + **`eggs-produce-and-backup.sh`**；默认 **`AMYCLAW_IMAGE_VERSION=v2.0.3`**）。勿只跑 `eggs produce` 而跳过 deploy，否则 `/opt/amyclaw` 可能不是最新。用生成于 **`/mnt/backup/`** 的新 ISO 重新刻录 U 盘即可。
 
 - **打包时报 xorriso 空间不足 / Image size exceeds free space**  
   **`/` 根分区**在打 ISO 过程中会同时占 **临时目录 + 最终 ISO**，建议空闲 **≥6GiB**；可先删旧 ISO、`rm -rf /var/tmp/eggs/*`、`apt-get clean`、`journalctl --vacuum-time=3d` 等。脚本会在 **`eggs produce` 前**检查 **≥约 6GiB**。
@@ -265,7 +286,7 @@ sudo fdisk -l
 - **DNS 兜底**：`/mnt/disk/amyclaw/scripts/install-amyclaw-dns-fallback.sh`（写入 `resolved.conf.d`，见 `resolv-镜像说明.md`）  
 - **eggs + Krill 凭证**：`/mnt/disk/amyclaw/scripts/apply-oem-penguins-eggs-credentials.sh`；Krill 模板：`docs/penguins-eggs/krill-amyclaw.yaml`  
 - **本文档**：`/mnt/disk/amyclaw/docs/eggs-量产克隆与使用说明.md`  
-- **ISO 备份目录**：`/mnt/backup/`（如 eggs 默认名 `amyclaw_amd64_*.iso`，及带版本副本 **`amyclaw_v2.0-release_amd64_*.iso`**）
+- **ISO 备份目录**：`/mnt/backup/`（如 eggs 默认名 `amyclaw_amd64_*.iso`，及带版本副本 **`amyclaw_v2.0.3_amd64_*.iso`**）
 
 以上 **除 OEM 外** 的路径均在 `/mnt` 下，**不会**被打进 ISO，仅母机或备份环境可用。
 
@@ -274,8 +295,8 @@ sudo fdisk -l
 - **`/opt/amyclaw/oem/`**：网络修复脚本、**网关/飞书自检脚本**等（见该目录下 `README.txt`）。  
 - **飞书/网关自检**：`sudo bash /opt/amyclaw/oem/diagnose-openclaw-gateway-feishu.sh`（与仓库 `scripts/diagnose-openclaw-gateway-feishu.sh` 同源，打 ISO 前须已执行 `deploy-to-opt.sh`）。
 
-**姊妹篇（与 v2.0-release 配套；不替代本文）**
+**姊妹篇（与 v2.0.3 配套；不替代本文）**
 
-- **`AmyClaw-量产与运维-v2.0-release.md`**：量产/运维一页总览。  
-- **`AmyClaw-用户安装后使用说明-v2.0-release.md`**：仅面向安装后的用户。  
+- **`AmyClaw-量产与运维-v2.0.3.md`**：量产/运维一页总览（**`AmyClaw-量产与运维-v2.0-release.md` 已迁移至此**）。  
+- **`AmyClaw-用户安装后使用说明-v2.0.3.md`**：仅面向安装后的用户（**`AmyClaw-用户安装后使用说明-v2.0-release.md` 为跳转**）。  
 - **`飞书-开放平台注册应用与机器人指南.md`**：飞书账号与应用/机器人注册流程。

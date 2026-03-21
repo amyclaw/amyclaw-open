@@ -11,22 +11,31 @@
 #   sudo bash /mnt/disk/amyclaw/docs/penguins-eggs/deploy-to-opt.sh
 #
 # 使用：sudo /mnt/disk/amyclaw/scripts/eggs-produce-and-backup.sh
-# 可选：AMYCLAW_IMAGE_VERSION=v2.0-release（默认 v2.0-release），备份时会额外生成带版本号的 ISO 文件名
+# 可选：AMYCLAW_IMAGE_VERSION=v2.0.3（默认 v2.0.3），备份时会额外生成带版本号的 ISO 文件名
+# 可选：EGGS_CLEAN_BEFORE_ISO=0 跳过打 ISO 前的 apt/日志/旧快照 清理
 set -euo pipefail
 
 # 必须以 root 运行
 [[ $(id -u) -eq 0 ]] || { echo "请使用 sudo 运行"; exit 1; }
 
-AMYCLAW_IMAGE_VERSION="${AMYCLAW_IMAGE_VERSION:-v2.0-release}"
+AMYCLAW_IMAGE_VERSION="${AMYCLAW_IMAGE_VERSION:-v2.0.3}"
 BACKUP_DIR="/mnt/backup"
 SNAPSHOT_DIR="${SNAPSHOT_DIR:-/var/tmp/eggs}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "========== 1. 安全清理（可选，已注释） =========="
-# 取消下面注释可在打包前清理缓存与日志，减小镜像体积
-# apt-get clean
-# journalctl --vacuum-time=1d
-# find /var/tmp -mindepth 1 -maxdepth 1 -type f -mtime +1 -delete 2>/dev/null || true
+echo "========== 1. 打 ISO 前清理（apt/日志/eggs 快照内旧 ISO，减小体积、释放空间） =========="
+if [[ "${EGGS_CLEAN_BEFORE_ISO:-1}" != "0" ]]; then
+  apt-get clean 2>/dev/null || true
+  journalctl --vacuum-time=3d 2>/dev/null || true
+  find /var/tmp -mindepth 1 -maxdepth 1 -type f -mtime +1 -delete 2>/dev/null || true
+  if [[ -d "${SNAPSHOT_DIR}/mnt" ]]; then
+    rm -f "${SNAPSHOT_DIR}"/mnt/*.iso 2>/dev/null || true
+    echo "已清理 ${SNAPSHOT_DIR}/mnt 内旧 ISO（若有）"
+  fi
+  echo "已执行 apt clean、journal 裁剪、临时文件清理"
+else
+  echo "已跳过（EGGS_CLEAN_BEFORE_ISO=0）"
+fi
 
 echo "========== 1b. /etc/resolv.conf（打 ISO 前确保标准软链） =========="
 bash "$SCRIPT_DIR/ensure-resolv-conf-symlink.sh" || true
