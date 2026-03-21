@@ -16,6 +16,11 @@ mv .git.bak-openclaw-upstream .git
 
 若长期以 monorepo 维护，可删除备份目录（确认不再需要上游历史后再删）。
 
+## OpenClaw 源码与 `dist` 铆定
+
+- 说明见 **`OPENCLAW-版本铆定.md`**。  
+- **`openclaw/dist/`** 在子目录 `.gitignore` 中默认忽略，纳入远程时使用 **`git add -f openclaw/dist`**。
+
 ## 远程
 
 - **Bitbucket**：`https://bitbucket.org/amygo-agents/amyclaw-u22-local.git`

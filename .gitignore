@@ -9,6 +9,7 @@ node_modules/
 **/data/token.txt
 
 # Build / cache
+# openclaw/dist 由 openclaw/.gitignore 忽略，铆定构建产物时用: git add -f openclaw/dist（见 docs/OPENCLAW-版本铆定.md）
 dist/
 openclaw/dist/
 **/dist/

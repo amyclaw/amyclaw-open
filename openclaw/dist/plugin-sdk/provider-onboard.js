@@ -1,0 +1,16 @@
+import "../logger-ByBU4z1U.js";
+import "../paths-1qR_mW4i.js";
+import "../tmp-openclaw-dir-BDQ0wJ2G.js";
+import "../theme-BSXzMzAA.js";
+import "../globals-DqZvRoPX.js";
+import "../subsystem-MGyxt_Bl.js";
+import "../ansi-BPhP6LBZ.js";
+import "../utils-BMtC0Ocd.js";
+import "../model-selection-DJOYg7Dx.js";
+import "../agent-scope-B-OyGztR.js";
+import "../boundary-file-read-Y1cMjPlu.js";
+import "../logger-iZtdpoh6.js";
+import "../exec-CwhzW0JB.js";
+import "../workspace-Dns6NMt3.js";
+import { a as applyProviderConfigWithModelCatalog, i as applyProviderConfigWithDefaultModels, n as applyOnboardAuthAgentModelsAndProviders, o as ensureModelAllowlistEntry, r as applyProviderConfigWithDefaultModel, t as applyAgentDefaultModelPrimary } from "../provider-onboard-dAr3NUh2.js";
+export { applyAgentDefaultModelPrimary, applyOnboardAuthAgentModelsAndProviders, applyProviderConfigWithDefaultModel, applyProviderConfigWithDefaultModels, applyProviderConfigWithModelCatalog, ensureModelAllowlistEntry };
