@@ -7,6 +7,16 @@ mnt/backup
 mnt/backup/*
 
 # ========== /mnt/disk/amyclaw 内排除 ==========
+# 顶层 monorepo Git（远程 URL、提交历史、可能含 Bitbucket 凭据痕迹；运行时不依赖，量产以 /opt/amyclaw 为准）
+mnt/disk/amyclaw/.git
+mnt/disk/amyclaw/.git/*
+mnt/disk/amyclaw/.cursor
+mnt/disk/amyclaw/.cursor/*
+
+# OpenClaw 上游元数据备份（完整 .git 对象库，体积大；运行时不依赖）
+mnt/disk/amyclaw/openclaw/.git.bak-openclaw-upstream
+mnt/disk/amyclaw/openclaw/.git.bak-openclaw-upstream/*
+
 # OpenClaw：未编译源码与开发/个人用
 mnt/disk/amyclaw/openclaw/.git
 mnt/disk/amyclaw/openclaw/.git/*

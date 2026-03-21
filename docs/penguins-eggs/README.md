@@ -117,12 +117,24 @@ sudo eggs produce --verbose --static
 ## 五、排除内容说明（amyclaw-exclude.list）
 
 - **/mnt/backup**：备份输出目录，不打包进镜像。
+- **顶层 monorepo Git**：`/mnt/disk/amyclaw/.git`（远程地址、提交历史；**不**打入 ISO；运行依赖 **`/opt/amyclaw`**，由 `deploy-to-opt.sh` 同步且不包含 `.git`）。
+- **OpenClaw 上游备份**：`openclaw/.git.bak-openclaw-upstream`（完整对象库、体积大；不打入）。
 - **OpenClaw 未编译与开发用**：`openclaw` 下的 `.git`、`src/`、`docs/`、`apps/`、`changelog/`、`.github/`、测试与开发配置等；保留 `dist/`、`openclaw.mjs`、`extensions/`、`skills/`、`production-template/` 等运行所需部分。
 - **管理端敏感与临时**：`openclaw-management/data/`、`openclaw-management/.env`、`openclaw-management/.env.local`、日志等。
 - **运行时依赖**：`openclaw/node_modules`、`openclaw-management/node_modules` 已排除，恢复后在目标机执行 `pnpm install` / `npm install` 以减小镜像并避免二进制兼容问题。
 - **系统级敏感**：`/root/.openclaw`（Token、API Key 等）不打包，恢复后通过管理页或 production-template 重新配置。
 
 其他系统运行与上述两个系统运行不需要的敏感文件、个人文件，也通过该列表排除；个人账号由默认 homes 模板与上述策略处理。
+
+### 5.1 打包前仍建议人工检查（列表外）
+
+| 风险 | 说明 |
+|------|------|
+| **`/root/.ssh/`**、**`~/.bash_history`** | eggs 快照含母机 root 家目录时可能带入 SSH 密钥、历史命令；打 ISO 前可清空或排除（视 eggs 是否排除 `/root` 子路径而定）。 |
+| **浏览器 / 其他用户目录** | 若母机登录过图形界面，家目录可能有缓存；一般用默认排除 + 专用母机可减轻。 |
+| **`/opt/amyclaw`** | 由 `deploy-to-opt.sh` 写入，**无** `.git`；仅含运行文件，**不含** Bitbucket 账号。 |
+
+打 ISO 后母机须将 **`docs/penguins-eggs/amyclaw-exclude.list`** 同步到 **`/etc/penguins-eggs.d/exclude.list.d/`** 并合并 `master.list`（勿整段 `mnt/*`），否则见上文 **2.2**。
 
 ## 六、恢复至另一台机器
 
