@@ -848,11 +848,30 @@ const ROUTES = {
     if (hasMinimaxKey) fallbacks.push("minimax/MiniMax-M2.5");
     if (config.agents?.defaults?.model) config.agents.defaults.model.fallbacks = fallbacks;
 
-    // 大模型调用路径与成功范例一致：存在 google 提供商时主模型使用 google/xxx（v1beta + google-generative-ai）
-    const primary = config.agents?.defaults?.model?.primary;
-    if (typeof primary === "string" && primary.startsWith("idatabase/") && providers.google) {
-      const modelId = primary.slice("idatabase/".length).trim();
-      if (modelId) config.agents.defaults.model.primary = "google/" + modelId;
+    // 主模型：仅 Gemini（idatabase/xxx）规范为 google/xxx + v1beta；GPT/Claude 等保持 idatabase/xxx + openai-completions
+    const primaryRaw = config.agents?.defaults?.model?.primary;
+    if (typeof primaryRaw === "string" && primaryRaw.includes("/")) {
+      const modelId = primaryRaw.split("/").pop().trim();
+      const gemini =
+        modelId &&
+        (modelId.toLowerCase().startsWith("gemini") ||
+          modelId === "gemini-3.1-pro-preview" ||
+          modelId === "gemini-3.1-flash-lite-preview");
+      if (primaryRaw.startsWith("idatabase/") && gemini && providers.google) {
+        config.agents.defaults.model.primary = "google/" + modelId;
+      }
+      if (primaryRaw.startsWith("google/") && gemini && providers.idatabase?.api === "openai-completions") {
+        delete providers.idatabase.api;
+      }
+      if (primaryRaw.startsWith("idatabase/") && modelId && !gemini) {
+        providers.idatabase = providers.idatabase || {};
+        providers.idatabase.api = "openai-completions";
+        const root = String(providers.idatabase.baseUrl || "")
+          .replace(/\/$/, "")
+          .replace(/\/v1beta$/i, "")
+          .replace(/\/v1$/i, "");
+        providers.idatabase.baseUrl = (root || "https://api.idatabase.ai") + "/v1";
+      }
     }
 
     const mem = config.agents?.defaults?.memorySearch;
@@ -1153,28 +1172,51 @@ const ROUTES = {
     }
   },
 
-  /** 测试 idatabase 连通性：POST /v1/chat/completions；body 可传 apiKey、baseUrl、model。未登录时也可用（凭 body 中的 key 测试）。 */
+  /** 测试 idatabase：Gemini 用 v1beta generateContent；其它模型用 /v1/chat/completions。body: apiKey、baseUrl、model */
   "POST /api/test-idatabase": async (req, res) => {
     const body = await parseJsonBody(req);
     const baseUrl = (body.baseUrl || "https://api.idatabase.ai").replace(/\/$/, "");
     const apiKey = (body.apiKey && body.apiKey.trim()) || IDATABASE_TEST_KEY;
     const model = body.model || "gemini-3.1-flash-lite-preview";
+    const root = baseUrl.replace(/\/v1$/i, "").replace(/\/v1beta$/i, "");
+    const isGemini = typeof model === "string" && model.toLowerCase().startsWith("gemini");
     try {
-      const r = await fetch(`${baseUrl}/v1/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: "user", content: "你好，请确认收到信息" }],
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error?.message || data.error?.code || `HTTP ${r.status}`);
-      if (data.error && (data.error.message || data.error.code)) throw new Error(data.error.message || data.error.code);
+      if (isGemini) {
+        const url = `${root}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+        const r = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: "ping" }] }],
+            generationConfig: { maxOutputTokens: 16 },
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error?.message || data.error?.code || `HTTP ${r.status}`);
+        if (data.error && (data.error.message || data.error.code)) throw new Error(data.error.message || data.error.code);
+      } else {
+        const chatBase = root.endsWith("/v1") ? root : `${root}/v1`;
+        const r = await fetch(`${chatBase}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: "你好，请确认收到信息" }],
+            max_tokens: 32,
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error?.message || data.error?.code || `HTTP ${r.status}`);
+        if (data.error && (data.error.message || data.error.code)) throw new Error(data.error.message || data.error.code);
+      }
       send(res, 200, { ok: true, message: "idatabase 连通正常" });
     } catch (e) {
       send(res, 200, { ok: false, error: String(e.message) });
@@ -1242,20 +1284,47 @@ const ROUTES = {
     }
   },
 
-  /** 获取模型列表（仅上游返回，无静态/修饰）；与调用格式一致：默认 v1（POST baseUrl/v1/chat/completions + Bearer）。
-   *  POST body: baseUrl, apiKey, apiStyle?: "v1"|"v1beta"|"all"。v1: baseUrl/v1/models → idatabase/xxx；v1beta: baseUrl/v1beta/models → google/xxx；all: 合并。 */
+  /** 获取模型列表（仅上游返回，无静态/修饰）；默认 v1。
+   *  POST body: baseUrl, apiKey, apiStyle?: "v1"|"v1beta"|"all", listFor?: "chat"|"embedding"。
+   *  baseUrl 可含 /v1 或 /v1beta，会先归一到站点根再请求 /v1/models、/v1beta/models。
+   *  all：合并 v1 与 v1beta；同一 model id 只保留一条（Gemini → google/，其余 → idatabase/），避免两条接口各列一次导致重复。
+   *  listFor=chat：排除疑似向量/嵌入模型；listFor=embedding：仅保留疑似向量模型（主模型与向量下拉互不混用）。 */
   "POST /api/models-list": async (req, res) => {
     const body = await parseJsonBody(req);
-    const baseUrl = ((body.baseUrl && body.baseUrl.trim()) || "https://api.idatabase.ai").replace(/\/$/, "");
+    const baseUrlRaw = ((body.baseUrl && body.baseUrl.trim()) || "https://api.idatabase.ai").replace(/\/$/, "");
+    const root = baseUrlRaw.replace(/\/v1beta$/i, "").replace(/\/v1$/i, "");
+    const baseUrl = root || "https://api.idatabase.ai";
     const apiKey = (body.apiKey && body.apiKey.trim()) || IDATABASE_TEST_KEY;
     const apiStyle = (body.apiStyle && body.apiStyle.trim()) || "v1";
-    const seen = new Set();
-    const models = [];
-    function add(id, providerPrefix) {
-      const key = (providerPrefix || "idatabase") + "/" + id;
-      if (!id || seen.has(key)) return;
-      seen.add(key);
-      models.push({ id, providerPrefix: providerPrefix || "idatabase" });
+    const listFor = (body.listFor && String(body.listFor).trim()) || "";
+    /** 按模型 id 启发式分类（与上游仅返回 id 字符串时的常见命名一致）。
+     * 注意：JS 中 \\b 词边界将「下划线」视为单词字符，故 text_embedding_xxx 中的 embedding 无法被 \\bembedding\\b 匹配；
+     * 需先将 _、. 归一成 - 再判断，否则会误判为「非向量」并出现在主模型列表、向量列表为空。 */
+    function isEmbeddingModelId(id) {
+      const raw = String(id ?? "").trim();
+      if (!raw) return false;
+      const s = raw.toLowerCase().replace(/_/g, "-").replace(/\./g, "-");
+      if (s.includes("embedding") || s.includes("embeddings")) return true;
+      if (s.includes("text-embedding")) return true;
+      if (/^(bge|m3e|e5)([-/._]|$)/i.test(s)) return true;
+      return false;
+    }
+    /** 与保存逻辑一致：Gemini 走 google/，GPT/Claude 等走 idatabase/ */
+    function canonicalProviderPrefixForModelId(id) {
+      const s = (id || "").trim();
+      if (!s) return "idatabase";
+      if (s.toLowerCase().startsWith("gemini")) return "google";
+      return "idatabase";
+    }
+    const mergedByNormId = new Map();
+    function ingestModelId(id) {
+      const trimmed = (id || "").trim();
+      if (!trimmed) return;
+      const norm = trimmed.toLowerCase();
+      const prefix = canonicalProviderPrefixForModelId(trimmed);
+      if (!mergedByNormId.has(norm)) {
+        mergedByNormId.set(norm, { id: trimmed, providerPrefix: prefix });
+      }
     }
     try {
       if (apiStyle === "v1" || apiStyle === "all") {
@@ -1268,7 +1337,7 @@ const ROUTES = {
           const list = data.data || data.models || [];
           (Array.isArray(list) ? list : []).forEach((m) => {
             const id = (m.id || m.model || m.name || String(m)).trim();
-            if (id) add(id, "idatabase");
+            ingestModelId(id);
           });
         }
       }
@@ -1282,9 +1351,17 @@ const ROUTES = {
           data.models.forEach((m) => {
             const name = m.name || m.id || "";
             const id = name.replace(/^models\//, "").trim() || (m.id || m.model || "").trim();
-            if (id) add(id, "google");
+            ingestModelId(id);
           });
         }
+      }
+      let models = Array.from(mergedByNormId.values()).sort((a, b) =>
+        a.id.localeCompare(b.id, undefined, { sensitivity: "base" }),
+      );
+      if (listFor === "chat") {
+        models = models.filter((m) => !isEmbeddingModelId(m.id));
+      } else if (listFor === "embedding") {
+        models = models.filter((m) => isEmbeddingModelId(m.id));
       }
       send(res, 200, { models });
     } catch (e) {
@@ -1297,7 +1374,11 @@ const ROUTES = {
     const body = await parseJsonBody(req);
     const baseUrl = (body.baseUrl && body.baseUrl.trim()) || "https://api.idatabase.ai";
     const apiKey = (body.apiKey && body.apiKey.trim()) || IDATABASE_TEST_KEY;
-    const model = (body.model && body.model.trim()) || "text-embedding-005";
+    const model = (body.model && body.model.trim()) || "";
+    if (!model) {
+      send(res, 200, { ok: false, error: "请选择或填写向量模型" });
+      return;
+    }
     const base = baseUrl.replace(/\/$/, "");
     const embedPath = base.endsWith("/v1") ? "/embeddings" : "/v1/embeddings";
     try {

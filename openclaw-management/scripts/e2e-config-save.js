@@ -193,6 +193,91 @@ async function run() {
 
     log("第一次 PATCH 校验通过（google 调用路径 + 记忆 /v1/）");
 
+    // 非 Gemini 主模型：服务端不得再强制改为 google/；应保持 idatabase/ + openai-completions
+    await api(TEST_PORT, TEST_TOKEN, "PATCH", "/api/config", {
+      models: {
+        providers: {
+          idatabase: {
+            baseUrl: "https://api.idatabase.ai/v1",
+            api: "openai-completions",
+            apiKey: idatabaseKey,
+            models: [
+              { id: "gpt-5.4-nano", name: "idatabase", input: ["text"], contextWindow: 128000, maxTokens: 8192 },
+            ],
+          },
+          google: {
+            baseUrl: "https://api.idatabase.ai/v1beta",
+            api: "google-generative-ai",
+            apiKey: idatabaseKey,
+            models: [
+              { id: "gemini-3.1-pro-preview", name: "Gemini-3.1-Pro-Preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
+              { id: "gemini-3.1-flash-lite-preview", name: "Gemini-3.1-flash-lite-preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
+            ],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: { primary: "idatabase/gpt-5.4-nano" },
+          memorySearch: {
+            provider: "openai",
+            model: "text-embedding-005",
+            remote: { baseUrl: "https://api.idatabase.ai/v1/", apiKey: memoryKey },
+          },
+        },
+      },
+    });
+    const configChatPath = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
+    if (configChatPath.agents?.defaults?.model?.primary !== "idatabase/gpt-5.4-nano") {
+      throw new Error(
+        "idatabase/GPT 主模型应保持 idatabase/ 前缀，实际: " + configChatPath.agents?.defaults?.model?.primary,
+      );
+    }
+    if (configChatPath.models?.providers?.idatabase?.api !== "openai-completions") {
+      throw new Error(
+        "idatabase 应为 openai-completions，实际: " + configChatPath.models?.providers?.idatabase?.api,
+      );
+    }
+    log("idatabase 非 Gemini（Chat）路径校验通过");
+
+    // 恢复后续 E2E 所需的 Gemini 主模型配置
+    await api(TEST_PORT, TEST_TOKEN, "PATCH", "/api/config", {
+      models: {
+        providers: {
+          idatabase: {
+            baseUrl: "https://api.idatabase.ai",
+            apiKey: idatabaseKey,
+            models: [
+              { id: "gemini-3.1-flash-lite-preview", name: "idatabase", input: ["text"], contextWindow: 128000, maxTokens: 8192 },
+            ],
+          },
+          google: {
+            baseUrl: "https://api.idatabase.ai/v1beta",
+            api: "google-generative-ai",
+            apiKey: idatabaseKey,
+            models: [
+              { id: "gemini-3.1-pro-preview", name: "Gemini-3.1-Pro-Preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
+              { id: "gemini-3.1-flash-lite-preview", name: "Gemini-3.1-flash-lite-preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
+            ],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: { primary: "google/gemini-3.1-flash-lite-preview" },
+          memorySearch: {
+            provider: "openai",
+            model: "text-embedding-005",
+            remote: { baseUrl: "https://api.idatabase.ai/v1/", apiKey: memoryKey },
+          },
+        },
+      },
+    });
+    const configRestored = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
+    if (configRestored.agents?.defaults?.model?.primary !== "google/gemini-3.1-flash-lite-preview") {
+      throw new Error("恢复 Gemini 主模型后 primary 应回到 google/gemini-3.1-flash-lite-preview");
+    }
+
     // 密钥显示：GET /api/resolved-secrets 应返回刚写入的 llm / 向量 key，供前端显示
     const secrets = await api(TEST_PORT, TEST_TOKEN, "GET", "/api/resolved-secrets");
     if (secrets.llmApiKey !== idatabaseKey) {

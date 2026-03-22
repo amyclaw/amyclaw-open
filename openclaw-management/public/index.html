@@ -232,12 +232,12 @@
 
     <section data-section="memory">
       <h2 id="memoryTitle">向量检索（记忆）</h2>
-      <p class="help" id="memoryHelp">URL 与大模型相同，默认 https://api.idatabase.ai；模型默认 text-embedding-005。填写 API Key 后点击「获取可用模型」拉取下拉选项。</p>
+      <p class="help" id="memoryHelp">URL 与大模型相同，默认 https://api.idatabase.ai。填写 API Key 后点击「获取可用模型」，以下拉返回的向量模型为准。</p>
       <label>Base URL</label>
       <input type="text" id="memoryBaseUrl" data-save="memory" placeholder="https://api.idatabase.ai/v1/" />
       <label>模型</label>
       <select id="memoryModel" data-save="memory">
-        <option value="text-embedding-005">text-embedding-005</option>
+        <option value="">— 请先获取可用模型 —</option>
       </select>
       <button type="button" id="btnFetchEmbeddingModels">获取可用模型</button>
       <label>API Key</label>
@@ -449,14 +449,14 @@
         feishuDomainHelp: "国内版填 feishu，国际版填 lark。",
         modelProviderNotice: "国内用户请选择 Kimi 等国内合规模型；Gemini、GPT 等适合非中国用户，请根据使用地法规谨慎选择。优先级：上方主模型（idatabase）优先；不可用时将按顺序自动使用下方备选（Kimi → Minimax）。",
         idatabaseTitle: "模型 API（idatabase.ai）",
-        idatabaseHelp: "Gemini、GPT 等适合非中国用户。主模型不可用时将依次使用下方 Kimi、Minimax 备选。填写 API Key 即可使用。可点击「测试连通性」验证 Key 是否有效。",
+        idatabaseHelp: "Gemini、GPT 等适合非中国用户。主模型不可用时将依次使用下方 Kimi、Minimax 备选。填写 API Key 后点击「获取模型列表」拉取主模型下拉选项，再保存或测试。",
         kimiTitle: "Kimi（月之暗面）",
         kimiHelp: "适合国内用户。主模型不可用时将按顺序使用本备选。API 地址固定为 Moonshot 官方，仅需填写 Key 并选择模型。",
         kimiKeyHelp: "请填写月之暗面开放平台获取的官方 API Key：<a href=\"https://platform.moonshot.cn\" target=\"_blank\" rel=\"noopener\">platform.moonshot.cn</a> 创建应用并获取 Key，<a href=\"https://platform.moonshot.cn/docs/guide/use-kimi-in-openclaw\" target=\"_blank\" rel=\"noopener\">接入文档</a>。",
         minimaxTitle: "Minimax — 备选 2",
         minimaxHelp: "主模型与 Kimi 均不可用时将使用本备选。填 API Key 即用。",
         memoryTitle: "向量检索（记忆）",
-        memoryHelp: "默认 Google text-embedding-005；需填写 API Key（可与 idatabase 使用相同 Key 测试连通性）。",
+        memoryHelp: "需填写 API Key（可与 idatabase 使用相同 Key 测试连通性）。点击「获取可用模型」后从下拉选择向量模型。",
         updateTitle: "AmyClaw 自动更新",
         updateHelp: "每日自动检测一次升级；若有可用更新，顶部「升级」旁会显示提示，点击进入升级子页。子页可查看当前版本、检测本机环境并上传服务器校验，通过后可同意升级。",
         saveAll: "保存全部配置",
@@ -478,6 +478,7 @@
         placeholderLoginToken: "输入 Token 验证",
         btnFetchModels: "获取模型列表",
         placeholderFetchModelsFirst: "— 请先获取模型列表 —",
+        placeholderFetchEmbeddingFirst: "— 请先获取可用模型 —",
         btnFetchEmbeddingModels: "获取可用模型",
         togglePwdShow: "显示",
         togglePwdHide: "隐藏",
@@ -547,14 +548,14 @@
         feishuDomainHelp: "feishu for China, lark for international.",
         modelProviderNotice: "Users in China: please choose compliant domestic models such as Kimi; Gemini, GPT, etc. for users outside China. Choose according to local regulations. Priority: primary (idatabase) first; when unavailable, fallbacks are used in order: Kimi → Minimax.",
         idatabaseTitle: "Model API (idatabase.ai)",
-        idatabaseHelp: "Gemini, GPT, etc. for users outside China. When primary is unavailable, Kimi then Minimax are used in order. Enter API Key and click \"Test connectivity\" to verify.",
+        idatabaseHelp: "Gemini, GPT, etc. for users outside China. When primary is unavailable, Kimi then Minimax are used in order. Enter API Key, click \"Fetch model list\" for the primary dropdown, then save or test.",
         kimiTitle: "Kimi (Moonshot)",
         kimiHelp: "For users in China. Used as fallback 1 when primary is unavailable. Enter official API Key and select model.",
         kimiKeyHelp: "Enter the official API Key from <a href=\"https://platform.moonshot.cn\" target=\"_blank\" rel=\"noopener\">platform.moonshot.cn</a> (create an app to get the key). <a href=\"https://platform.moonshot.cn/docs/guide/use-kimi-in-openclaw\" target=\"_blank\" rel=\"noopener\">OpenClaw integration guide</a>.",
         minimaxTitle: "Minimax — Fallback 2",
         minimaxHelp: "Used when primary and Kimi are both unavailable. Enter API Key to enable.",
         memoryTitle: "Vector / Memory",
-        memoryHelp: "Default Google text-embedding-005. Enter API Key (same key as idatabase can be used for testing).",
+        memoryHelp: "Enter API Key (same key as idatabase can be used for testing). Click \"Fetch embedding models\" and choose from the list.",
         updateTitle: "AmyClaw Auto Update",
         updateHelp: "Automatic upgrade check once per day. If an update is available, a badge appears next to the Upgrade link; click to open the upgrade sub-page to see the current version, run environment check, and agree to upgrade after server qualifies.",
         saveAll: "Save all",
@@ -576,6 +577,7 @@
         placeholderLoginToken: "Enter token to verify",
         btnFetchModels: "Fetch model list",
         placeholderFetchModelsFirst: "— Fetch model list first —",
+        placeholderFetchEmbeddingFirst: "— Fetch embedding models first —",
         btnFetchEmbeddingModels: "Fetch embedding models",
         togglePwdShow: "Show",
         togglePwdHide: "Hide",
@@ -645,7 +647,13 @@
       const btnFetchModels = document.getElementById("btnFetchModels"); if (btnFetchModels) btnFetchModels.textContent = t("btnFetchModels");
       const btnFetchEmbedding = document.getElementById("btnFetchEmbeddingModels"); if (btnFetchEmbedding) btnFetchEmbedding.textContent = t("btnFetchEmbeddingModels");
       const primarySelect = document.getElementById("primaryModel");
-      if (primarySelect && primarySelect.options[0]) primarySelect.options[0].text = t("placeholderFetchModelsFirst");
+      if (primarySelect && primarySelect.options[0] && primarySelect.options[0].value === "") {
+        primarySelect.options[0].text = t("placeholderFetchModelsFirst");
+      }
+      const memorySelect = document.getElementById("memoryModel");
+      if (memorySelect && memorySelect.options[0] && memorySelect.options[0].value === "") {
+        memorySelect.options[0].text = t("placeholderFetchEmbeddingFirst");
+      }
       document.querySelectorAll(".toggle-pwd").forEach(function (btn) {
         var showing = btn.getAttribute("data-showing") === "1";
         btn.classList.toggle("pwd-visible", showing);
@@ -740,19 +748,67 @@
       { id: "gemini-3.1-pro-preview", name: "Gemini-3.1-Pro-Preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
       { id: "gemini-3.1-flash-lite-preview", name: "Gemini-3.1-flash-lite-preview", input: ["text"], contextWindow: 200000, maxTokens: 8192 },
     ];
-    function buildPatchIdatabase(isClear) {
-      const baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
-      const primaryRaw = document.getElementById("primaryModel").value.trim() || "google/gemini-3.1-flash-lite-preview";
-      var primary = primaryRaw;
-      var modelId = primary.includes("/") ? primary.split("/").pop() : primary;
-      if (primary.startsWith("idatabase/")) primary = "google/" + modelId;
+    function isGeminiModelId(modelId) {
+      var id = (modelId || "").trim();
+      if (!id) return false;
+      if (id.toLowerCase().indexOf("gemini") === 0) return true;
+      return IDATABASE_GOOGLE_MODELS.some(function (m) { return m.id === id; });
+    }
+    function buildPatchIdatabase(isClear, strictSave) {
+      const baseUrlRoot = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
+      const primaryRaw = document.getElementById("primaryModel").value.trim();
+      if (!isClear && !primaryRaw) {
+        if (strictSave) {
+          toast("idatabase", lang === "zh" ? "请先获取模型列表并选择主模型" : "Fetch the model list and select a primary model first");
+          return null;
+        }
+        return false;
+      }
+      const effectivePrimary = isClear ? (primaryRaw || "google/gemini-3.1-flash-lite-preview") : primaryRaw;
+      var modelId = effectivePrimary.indexOf("/") >= 0 ? effectivePrimary.split("/").pop() : effectivePrimary;
+      const gemini = isGeminiModelId(modelId);
       const idKey = document.getElementById("idatabaseApiKey").value.trim();
       const patch = { models: { providers: {} } };
-      if (!isClear) patch.agents = { defaults: { model: { primary } } };
-      patch.models.providers.idatabase = {
-        baseUrl,
-        models: [{ id: modelId, name: "idatabase", input: ["text"], contextWindow: 128000, maxTokens: 8192 }],
-      };
+      if (!isClear) {
+        patch.agents = {
+          defaults: { model: { primary: gemini ? "google/" + modelId : "idatabase/" + modelId } },
+        };
+      }
+      if (isClear) {
+        patch.models.providers.idatabase = {
+          baseUrl: baseUrlRoot,
+          models: [
+            {
+              id: modelId || "gemini-3.1-flash-lite-preview",
+              name: "idatabase",
+              input: ["text"],
+              contextWindow: 128000,
+              maxTokens: 8192,
+            },
+          ],
+          apiKey: "",
+        };
+        patch.models.providers.google = {
+          baseUrl: "https://api.idatabase.ai/v1beta",
+          api: "google-generative-ai",
+          models: IDATABASE_GOOGLE_MODELS,
+          apiKey: "",
+        };
+        return patch;
+      }
+      if (gemini) {
+        patch.models.providers.idatabase = {
+          baseUrl: baseUrlRoot,
+          models: [{ id: modelId, name: "idatabase", input: ["text"], contextWindow: 128000, maxTokens: 8192 }],
+        };
+      } else {
+        var chatRoot = baseUrlRoot.replace(/\/$/, "").replace(/\/v1beta$/i, "").replace(/\/v1$/i, "");
+        patch.models.providers.idatabase = {
+          baseUrl: chatRoot + "/v1",
+          api: "openai-completions",
+          models: [{ id: modelId, name: "idatabase", input: ["text"], contextWindow: 128000, maxTokens: 8192 }],
+        };
+      }
       if (isClear || idKey) patch.models.providers.idatabase.apiKey = isClear ? "" : idKey;
       if (!isClear && idKey) {
         patch.models.providers.google = {
@@ -761,19 +817,20 @@
           models: IDATABASE_GOOGLE_MODELS,
           apiKey: idKey,
         };
-      } else if (isClear) {
-        patch.models.providers.google = {
-          baseUrl: "https://api.idatabase.ai/v1beta",
-          api: "google-generative-ai",
-          models: IDATABASE_GOOGLE_MODELS,
-          apiKey: "",
-        };
       }
       return patch;
     }
-    function buildPatchMemory(isClear) {
+    function buildPatchMemory(isClear, strictSave) {
       const baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
-      const model = document.getElementById("memoryModel").value || "text-embedding-005";
+      const modelRaw = document.getElementById("memoryModel").value.trim();
+      if (!isClear && !modelRaw) {
+        if (strictSave) {
+          toast("memory", lang === "zh" ? "请先获取可用模型并选择向量模型" : "Fetch embedding models and select one first");
+          return null;
+        }
+        return false;
+      }
+      const model = isClear ? "" : modelRaw;
       const apiKey = document.getElementById("memoryApiKey").value.trim();
       const remote = { baseUrl };
       if (isClear) remote.apiKey = "";
@@ -815,29 +872,33 @@
       };
     }
 
-    async function saveSection(sectionId, isClear) {
+    async function saveSection(sectionId, isClear, strictSave) {
       let patch;
       switch (sectionId) {
         case "gateway": patch = buildPatchGateway(); break;
         case "feishu": patch = buildPatchFeishu(!!isClear); break;
-        case "idatabase": patch = buildPatchIdatabase(!!isClear); break;
+        case "idatabase": patch = buildPatchIdatabase(!!isClear, !!strictSave); break;
         case "kimi": patch = buildPatchKimi(!!isClear); break;
-        case "memory": patch = buildPatchMemory(!!isClear); break;
+        case "memory": patch = buildPatchMemory(!!isClear, !!strictSave); break;
         case "minimax": patch = buildPatchMinimax(!!isClear); break;
-        default: return;
+        default: return "skip";
       }
+      if (patch === false) return "skip";
+      if (patch === null) return strictSave ? "invalid" : "skip";
       try {
         const data = await api("PATCH", "/api/config", patch);
         toast(sectionId, (data?.message && data.message.includes("热加载") ? (lang === "zh" ? "已保存，Gateway 将热加载" : "Saved, gateway will hot-reload") : (lang === "zh" ? "已保存" : "Saved")));
-        loadConfig();
+        loadConfig(isClear ? {} : { preserveModelSelects: true });
+        return "ok";
       } catch (e) {
         toast(sectionId, "保存失败: " + e.message);
+        return "error";
       }
     }
 
     function scheduleSave(sectionId) {
       clearTimeout(saveDebounce[sectionId]);
-      saveDebounce[sectionId] = setTimeout(() => saveSection(sectionId), DEBOUNCE_MS);
+      saveDebounce[sectionId] = setTimeout(() => saveSection(sectionId, false, false), DEBOUNCE_MS);
     }
 
     function clearSection(sectionId) {
@@ -874,9 +935,15 @@
       if (sectionId === "memory") {
         document.getElementById("memoryBaseUrl").value = "https://api.idatabase.ai/v1/";
         const memSel = document.getElementById("memoryModel");
-        if (memSel) { memSel.value = "text-embedding-005"; memSel.innerHTML = "<option value=\"text-embedding-005\">text-embedding-005</option>"; }
+        if (memSel) {
+          memSel.innerHTML = "";
+          var memPh = document.createElement("option");
+          memPh.value = "";
+          memPh.textContent = t("placeholderFetchEmbeddingFirst");
+          memSel.appendChild(memPh);
+        }
       }
-      saveSection(sectionId, true).then(() => { loadConfigSummary(); toast(sectionId, "已清除并保存"); });
+      saveSection(sectionId, true, false).then(() => { loadConfigSummary(); toast(sectionId, "已清除并保存"); });
     }
 
     function setTokenCriticalBanner(kind) {
@@ -1305,6 +1372,110 @@
       }
     }
 
+    function applyPrimaryModelValue(sel, savedPrimary) {
+      var val = (savedPrimary != null && String(savedPrimary).trim()) ? String(savedPrimary).trim() : "";
+      if (!val) {
+        sel.value = "";
+        return;
+      }
+      if (Array.from(sel.options).some(function(o) { return o.value === val; })) {
+        sel.value = val;
+        return;
+      }
+      var opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val.indexOf("/") >= 0 ? val.split("/").pop() : val;
+      sel.appendChild(opt);
+      sel.value = val;
+    }
+    function applyMemoryModelValue(sel, savedMemory) {
+      var val = (savedMemory != null && String(savedMemory).trim()) ? String(savedMemory).trim() : "";
+      if (!val) {
+        sel.value = "";
+        return;
+      }
+      if (Array.from(sel.options).some(function(o) { return o.value === val; })) {
+        sel.value = val;
+        return;
+      }
+      var opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val;
+      sel.appendChild(opt);
+      sel.value = val;
+    }
+    async function fetchPrimaryModelListIntoForm(opts) {
+      opts = opts || {};
+      var silent = !!opts.silent;
+      var baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
+      var apiKey = document.getElementById("idatabaseApiKey").value.trim();
+      var savedPrimary = opts.savedPrimary !== undefined ? String(opts.savedPrimary).trim() : "";
+      var sel = document.getElementById("primaryModel");
+      if (!sel) return;
+      var data;
+      try {
+        data = await api("POST", "/api/models-list", { baseUrl: baseUrl, apiKey: apiKey || undefined, apiStyle: "all", listFor: "chat" });
+      } catch (e) {
+        data = { models: [], error: String(e.message) };
+      }
+      sel.innerHTML = "";
+      var placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("placeholderFetchModelsFirst");
+      sel.appendChild(placeholder);
+      (data.models || []).forEach(function(m) {
+        var id = (m.id || m.model || m.name || "").trim();
+        if (!id) return;
+        var prefix = (m.providerPrefix && m.providerPrefix.trim()) ? m.providerPrefix.trim() : "idatabase";
+        var opt = document.createElement("option");
+        opt.value = prefix + "/" + id;
+        opt.textContent = id;
+        sel.appendChild(opt);
+      });
+      applyPrimaryModelValue(sel, savedPrimary);
+      if (!silent) {
+        toast("idatabase", data.error ? data.error : (lang === "zh" ? "已拉取 " + (data.models && data.models.length) + " 个模型" : "Loaded " + (data.models && data.models.length) + " models"));
+      }
+    }
+    async function fetchEmbeddingModelListIntoForm(opts) {
+      opts = opts || {};
+      var silent = !!opts.silent;
+      var baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
+      var apiKey =
+        document.getElementById("memoryApiKey").value.trim() ||
+        document.getElementById("idatabaseApiKey").value.trim();
+      var savedMemory = opts.savedMemory !== undefined ? String(opts.savedMemory).trim() : "";
+      var sel = document.getElementById("memoryModel");
+      if (!sel) return;
+      var data;
+      try {
+        data = await api("POST", "/api/models-list", {
+          baseUrl: baseUrl,
+          apiKey: apiKey || undefined,
+          apiStyle: "all",
+          listFor: "embedding",
+        });
+      } catch (e) {
+        data = { models: [], error: String(e.message) };
+      }
+      sel.innerHTML = "";
+      var phEmb = document.createElement("option");
+      phEmb.value = "";
+      phEmb.textContent = t("placeholderFetchEmbeddingFirst");
+      sel.appendChild(phEmb);
+      (data.models || []).forEach(function(m) {
+        var id = (m.id || m.model || m.name || "").trim();
+        if (!id) return;
+        var opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = id;
+        sel.appendChild(opt);
+      });
+      applyMemoryModelValue(sel, savedMemory);
+      if (!silent) {
+        toast("memory", data.error ? data.error : (lang === "zh" ? "已拉取 " + (data.models && data.models.length) + " 个向量模型" : "Loaded " + (data.models && data.models.length) + " embedding models"));
+      }
+    }
     async function loadConfigSummary() {
       if (!token) return;
       try {
@@ -1334,7 +1505,10 @@
       } catch (_) {}
     }
 
-    async function loadConfig() {
+    /** opts.preserveModelSelects：保存后回读配置时用，避免清空用户已「获取」的完整模型列表，只同步选中值 */
+    async function loadConfig(opts) {
+      opts = opts || {};
+      var preserveModelSelects = !!opts.preserveModelSelects;
       if (!token) return;
       try {
         const cfg = await api("GET", "/api/config");
@@ -1390,25 +1564,51 @@
         const kimiFallback = fallbacks.find(function(f) { return f && f.startsWith("moonshot/"); });
         const kimiModelEl = document.getElementById("kimiModel");
         if (kimiModelEl && kimiFallback) kimiModelEl.value = kimiFallback;
-        const primary = cfg.agents?.defaults?.model?.primary;
+        /** 全量加载：只渲染配置里已保存的选中项（各 1 条）；完整列表须用户点击「获取」。保存后回读若 preserveModelSelects 则保留已展开的下拉，仅同步选中值。 */
+        const primarySaved = cfg.agents?.defaults?.model?.primary;
         const primaryEl = document.getElementById("primaryModel");
-        if (primary && primaryEl) {
-          primaryEl.value = primary;
-          if (!Array.from(primaryEl.options).some(function(o) { return o.value === primary; })) {
-            var opt = document.createElement("option");
-            opt.value = primary;
-            opt.textContent = primary.indexOf("/") >= 0 ? primary.split("/").pop() : primary;
-            primaryEl.appendChild(opt);
+        if (primaryEl) {
+          if (preserveModelSelects) {
+            if (primarySaved) {
+              applyPrimaryModelValue(primaryEl, primarySaved);
+            } else {
+              primaryEl.value = "";
+            }
+          } else {
+            primaryEl.innerHTML = "";
+            var phP = document.createElement("option");
+            phP.value = "";
+            phP.textContent = t("placeholderFetchModelsFirst");
+            primaryEl.appendChild(phP);
+            if (primarySaved) {
+              applyPrimaryModelValue(primaryEl, primarySaved);
+            } else {
+              primaryEl.value = "";
+            }
           }
         }
         if (mem) {
           document.getElementById("memoryBaseUrl").value = mem.remote && mem.remote.baseUrl ? mem.remote.baseUrl : "https://api.idatabase.ai/v1/";
           var memSel = document.getElementById("memoryModel");
-          var m = mem.model || "text-embedding-005";
+          var m = (mem.model && String(mem.model).trim()) || "";
           if (memSel) {
-            memSel.value = m;
-            if (!Array.from(memSel.options).some(function(o) { return o.value === m; })) {
-              var o = document.createElement("option"); o.value = m; o.textContent = m; memSel.appendChild(o);
+            if (preserveModelSelects) {
+              if (m) {
+                applyMemoryModelValue(memSel, m);
+              } else {
+                memSel.value = "";
+              }
+            } else {
+              memSel.innerHTML = "";
+              var phM = document.createElement("option");
+              phM.value = "";
+              phM.textContent = t("placeholderFetchEmbeddingFirst");
+              memSel.appendChild(phM);
+              if (m) {
+                applyMemoryModelValue(memSel, m);
+              } else {
+                memSel.value = "";
+              }
             }
           }
         }
@@ -1444,7 +1644,7 @@
       });
     });
     document.querySelectorAll("[data-save-btn]").forEach((btn) => {
-      btn.addEventListener("click", () => saveSection(btn.getAttribute("data-save-btn")));
+      btn.addEventListener("click", () => saveSection(btn.getAttribute("data-save-btn"), false, true));
     });
 
     document.getElementById("btnSaveAll").onclick = async () => {
@@ -1452,12 +1652,8 @@
       if (msg) msg.textContent = lang === "zh" ? "正在保存…" : "Saving…";
       let err = 0;
       for (const sectionId of SECTIONS) {
-        try {
-          await saveSection(sectionId);
-        } catch (e) {
-          err++;
-          toast(sectionId, (lang === "zh" ? "保存失败: " : "Save failed: ") + e.message);
-        }
+        const r = await saveSection(sectionId, false, true);
+        if (r === "invalid" || r === "error") err++;
       }
       if (msg) {
         msg.textContent = err
@@ -1523,7 +1719,11 @@
     document.getElementById("btnTestIdatabase").onclick = async () => {
       const baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
       const apiKey = document.getElementById("idatabaseApiKey").value.trim();
-      const primaryVal = document.getElementById("primaryModel").value.trim() || "google/gemini-3.1-flash-lite-preview";
+      const primaryVal = document.getElementById("primaryModel").value.trim();
+      if (!primaryVal) {
+        toast("idatabase", lang === "zh" ? "请先获取模型列表并选择主模型" : "Fetch the model list and select a primary model first");
+        return;
+      }
       const model = primaryVal.replace(/^(google|idatabase)\//, "");
       try {
         const data = await api("POST", "/api/test-idatabase", { baseUrl, apiKey: apiKey || undefined, model });
@@ -1561,8 +1761,14 @@
     };
     document.getElementById("btnTestMemory").onclick = async () => {
       const baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
-      const model = document.getElementById("memoryModel").value || "text-embedding-005";
-      const apiKey = document.getElementById("memoryApiKey").value.trim();
+      const model = document.getElementById("memoryModel").value.trim();
+      if (!model) {
+        toast("memory", lang === "zh" ? "请先获取可用模型并选择向量模型" : "Fetch embedding models and select one first");
+        return;
+      }
+      const apiKey =
+        document.getElementById("memoryApiKey").value.trim() ||
+        document.getElementById("idatabaseApiKey").value.trim();
       try {
         const data = await api("POST", "/api/test-memory", { baseUrl, model, apiKey: apiKey || undefined });
         toast("memory", data.ok ? (lang === "zh" ? "连通正常" : "OK") : (data.error || ""));
@@ -1572,55 +1778,18 @@
     };
 
     document.getElementById("btnFetchModels").onclick = async () => {
-      const baseUrl = document.getElementById("idatabaseBaseUrl").value.trim() || "https://api.idatabase.ai";
-      const apiKey = document.getElementById("idatabaseApiKey").value.trim();
+      var saved = document.getElementById("primaryModel").value.trim();
       try {
-        const data = await api("POST", "/api/models-list", { baseUrl, apiKey: apiKey || undefined, apiStyle: "v1beta" });
-        const sel = document.getElementById("primaryModel");
-        sel.innerHTML = "";
-        var placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = t("placeholderFetchModelsFirst");
-        sel.appendChild(placeholder);
-        (data.models || []).forEach(function(m) {
-          var id = (m.id || m.model || m.name || "").trim();
-          if (!id) return;
-          var prefix = (m.providerPrefix && m.providerPrefix.trim()) ? m.providerPrefix.trim() : "idatabase";
-          var opt = document.createElement("option");
-          opt.value = prefix + "/" + id;
-          opt.textContent = id;
-          sel.appendChild(opt);
-        });
-        toast("idatabase", data.error ? data.error : (lang === "zh" ? "已拉取 " + (data.models && data.models.length) + " 个模型" : "Loaded " + (data.models && data.models.length) + " models"));
+        await fetchPrimaryModelListIntoForm({ savedPrimary: saved, silent: false });
       } catch (e) {
         toast("idatabase", (lang === "zh" ? "获取失败: " : "Fetch failed: ") + e.message);
       }
     };
 
     document.getElementById("btnFetchEmbeddingModels").onclick = async () => {
-      const baseUrl = document.getElementById("memoryBaseUrl").value.trim() || "https://api.idatabase.ai/v1/";
-      const apiKey = document.getElementById("memoryApiKey").value.trim();
+      var saved = document.getElementById("memoryModel").value.trim();
       try {
-        const data = await api("POST", "/api/models-list", { baseUrl, apiKey: apiKey || undefined });
-        const sel = document.getElementById("memoryModel");
-        var cur = sel.value;
-        sel.innerHTML = "";
-        (data.models || []).forEach(function(m) {
-          var id = m.id || m.model || m.name || "";
-          if (!id) return;
-          var opt = document.createElement("option");
-          opt.value = id;
-          opt.textContent = id;
-          sel.appendChild(opt);
-        });
-        if (!cur || !Array.from(sel.options).some(function(o) { return o.value === cur; })) {
-          var def = document.createElement("option");
-          def.value = "text-embedding-005";
-          def.textContent = "text-embedding-005";
-          sel.insertBefore(def, sel.firstChild);
-          sel.value = "text-embedding-005";
-        } else sel.value = cur;
-        toast("memory", data.error ? data.error : (lang === "zh" ? "已拉取 " + (data.models && data.models.length) + " 个模型" : "Loaded " + (data.models && data.models.length) + " models"));
+        await fetchEmbeddingModelListIntoForm({ savedMemory: saved, silent: false });
       } catch (e) {
         toast("memory", (lang === "zh" ? "获取失败: " : "Fetch failed: ") + e.message);
       }
