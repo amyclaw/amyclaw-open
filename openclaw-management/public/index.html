@@ -80,7 +80,12 @@
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
     }
     .page-header h1 { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-    .header-version { font-size: 0.85rem; font-weight: normal; color: var(--text-secondary); }
+    .header-version {
+      font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+      padding: 0.15rem 0.5rem; border-radius: 8px;
+      background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border);
+      letter-spacing: 0.02em;
+    }
     .header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .btn-link {
       padding: 0.6rem 1.25rem; border-radius: 9999px; text-decoration: none; font-weight: 500;
@@ -132,7 +137,10 @@
 </head>
 <body>
   <header class="page-header">
-    <h1 id="title">AmyClaw 管理设置 <span id="headerVersion" class="header-version" aria-hidden="true">v2.0.3</span></h1>
+    <h1 class="page-title-main">
+      <span id="title">AmyClaw 管理设置</span>
+      <span id="headerVersion" class="header-version">…</span>
+    </h1>
     <div class="header-actions">
       <a id="linkUpgrade" href="#" target="_blank" rel="noopener" class="btn-link">升级 AmyClaw 管理系统</a>
       <span id="upgradeBadge" style="display:none; margin-left:4px; padding:2px 8px; background:var(--accent); color:#0b1120; border-radius:9999px; font-size:0.8rem;">有可用更新</span>
@@ -404,6 +412,7 @@
     const LANG = {
       zh: {
         title: "AmyClaw 管理设置",
+        headerVersionLabel: "管理端版本",
         tokenSectionTitle: "AmyClaw Gateway Token",
         tokenSectionHelp: "用于连接本机 AmyClaw 并保存下方配置。未设置时请先在此生成或填写 Token 并保存；已设置过可在新设备上输入 Token 登录。",
         tokenSectionHelpNoToken: "设备尚未设置 Gateway Token 或已清除。请生成或输入新 Token 并保存。",
@@ -503,6 +512,7 @@
       },
       en: {
         title: "AmyClaw Settings",
+        headerVersionLabel: "Management UI version",
         tokenSectionTitle: "AmyClaw Gateway Token",
         tokenSectionHelp: "Used to connect to this machine's AmyClaw and save config below. If not set, generate or enter a token here first; if already set, enter the token on a new device to log in.",
         tokenSectionHelpNoToken: "No Gateway Token is set or it was cleared. Generate or enter a new token and save.",
@@ -604,6 +614,11 @@
     function t(key) { return LANG[lang]?.[key] ?? LANG.zh[key] ?? key; }
     function applyLang() {
       document.getElementById("title").textContent = t("title");
+      const headerVer = document.getElementById("headerVersion");
+      if (headerVer) {
+        headerVer.setAttribute("title", t("headerVersionLabel"));
+        headerVer.setAttribute("aria-label", t("headerVersionLabel"));
+      }
       const el = (id, prop, value) => { const e = document.getElementById(id); if (e) e[prop || "textContent"] = value; };
       el("tokenSectionTitle", null, t("tokenSectionTitle")); el("tokenSectionHelp", null, t("tokenSectionHelp"));
       el("gatewayTitle", null, t("gatewayTitle")); el("gatewayHelp", null, t("gatewayHelp"));
@@ -1916,6 +1931,23 @@
       if (upgradePanel) upgradePanel.style.display = isUpgrade ? "block" : "none";
       if (isUpgrade) loadUpgradePanelVersion();
     }
+    async function refreshHeaderVersion() {
+      const el = document.getElementById("headerVersion");
+      if (!el) return;
+      try {
+        const res = await fetch(API + "/api/version");
+        const data = await res.json().catch(() => ({}));
+        const v = data.version;
+        if (v) {
+          const s = String(v);
+          el.textContent = s.startsWith("v") ? s : "v" + s;
+        } else {
+          el.textContent = "—";
+        }
+      } catch (_) {
+        el.textContent = "—";
+      }
+    }
     async function loadUpgradePanelVersion() {
       try {
         const res = await fetch(API + "/api/version");
@@ -1988,6 +2020,7 @@
 
     (async () => {
       applyLang();
+      void refreshHeaderVersion();
       await loadUrls();
       routeHash();
       await loadStatus();
