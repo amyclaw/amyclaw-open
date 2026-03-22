@@ -1,0 +1,14 @@
+# 开机后再次强制 /etc/resolv.conf -> stub（防止 cloud-init、NM、旧镜像等覆盖成普通文件）
+# 安装：scripts/install-amyclaw-resolv-boot-fix.sh
+[Unit]
+Description=AmyClaw: ensure /etc/resolv.conf points to systemd-resolved stub
+After=network-online.target systemd-resolved.service
+Wants=systemd-resolved.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

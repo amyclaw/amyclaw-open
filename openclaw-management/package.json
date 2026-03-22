@@ -1,6 +1,6 @@
 {
   "name": "openclaw-management",
-  "version": "1.0.13",
+  "version": "2.0.5",
   "description": "OpenClaw 量产管理页：8080 端口设置 Token、配置与升级预留",
   "type": "module",
   "main": "server.js",
@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "e2e": "node scripts/e2e-config-save.js",
-    "e2e:config-save": "node scripts/e2e-config-save.js"
+    "e2e:config-save": "node scripts/e2e-config-save.js",
+    "e2e:change-password-dry": "node scripts/e2e-change-password-dry.js"
   },
   "engines": {
     "node": ">=18"

@@ -18,8 +18,8 @@ cp "$REPO/openclaw/scripts/systemd/openclaw-gateway.service" /etc/systemd/system
 cp "$REPO/openclaw-management/scripts/systemd/openclaw-management.service" /etc/systemd/system/
 
 # 若当前路径不是默认，则替换单元中的 WorkingDirectory
-if [[ "$REPO" != "/mnt/disk/amyclaw" ]]; then
-  sed -i "s|/mnt/disk/amyclaw|$REPO|g" /etc/systemd/system/openclaw-gateway.service /etc/systemd/system/openclaw-management.service
+if [[ "$REPO" != "/opt/amyclaw" ]]; then
+  sed -i "s|/opt/amyclaw|$REPO|g" /etc/systemd/system/openclaw-gateway.service /etc/systemd/system/openclaw-management.service
   echo "已把单元中的路径改为: $REPO"
 fi
 

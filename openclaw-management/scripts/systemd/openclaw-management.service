@@ -1,13 +1,15 @@
 [Unit]
 Description=OpenClaw 管理设置页 (量产 8080 / 开发可改 8000)
-Documentation=file:///mnt/disk/amyclaw/openclaw-management/README.md
+Documentation=file:///opt/amyclaw/openclaw-management/README.md
 After=network-online.target openclaw-gateway.service
 Wants=network-online.target
 
 [Service]
 Type=simple
-# 开发：指向仓库路径；量产：使用 scripts/deploy-to-opt.sh 部署到 /opt/openclaw-management 后本单元会被覆盖为 WorkingDirectory=/opt/openclaw-management
-WorkingDirectory=/mnt/disk/amyclaw/openclaw-management
+User=root
+Group=root
+# 量产默认 WorkingDirectory=/opt/amyclaw/openclaw-management；开发机可用 install-autostart.sh 传入其它仓库根路径以替换单元内 /opt/amyclaw
+WorkingDirectory=/opt/amyclaw/openclaw-management
 ExecStart=/usr/bin/env node server.js
 Restart=on-failure
 RestartSec=5

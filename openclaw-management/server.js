@@ -32,6 +32,9 @@ const IDATABASE_TEST_KEY = process.env.OPENCLAW_TEST_IDATABASE_KEY || "";
 /** 标准用户（Ubuntu 普通用户）用户名，用于密码修改与展示；可通过 STANDARD_USER_NAME 覆盖 */
 const STANDARD_USER_NAME = (process.env.STANDARD_USER_NAME || "amyclaw").trim() || "amyclaw";
 
+/** shadow-utils：显式绝对路径，避免个别 systemd 环境下 PATH 不含 /usr/sbin 导致 ENOENT */
+const CHPASSWD_BIN = "/usr/sbin/chpasswd";
+
 const DATA_DIR = path.join(__dirname, "data");
 const TOKEN_FILE = path.join(DATA_DIR, "token.txt");
 
@@ -955,14 +958,22 @@ const ROUTES = {
       return;
     }
     const password = String(body.password);
+    const line = user + ":" + password + "\n";
     try {
-      const r = spawnSync("chpasswd", [], {
-        input: user + ":" + password + "\n",
+      let r = spawnSync(CHPASSWD_BIN, [], {
+        input: line,
         encoding: "utf8",
         stdio: ["pipe", "pipe", "pipe"],
       });
+      if (r.error && (r.error.code === "ENOENT" || /ENOENT/i.test(String(r.error.message)))) {
+        r = spawnSync("chpasswd", [], {
+          input: line,
+          encoding: "utf8",
+          stdio: ["pipe", "pipe", "pipe"],
+        });
+      }
       if (r.status !== 0) {
-        const err = (r.stderr || r.stdout || "chpasswd failed").trim();
+        const err = (r.stderr || r.stdout || r.error?.message || "chpasswd failed").trim();
         send(res, 500, { error: err || "修改密码失败" });
         return;
       }

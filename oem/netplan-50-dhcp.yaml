@@ -1,0 +1,20 @@
+# AmyClaw 量产：IPv4 DHCP；nameservers 与 DHCP 下发的 DNS 合并（netplan/networkd 行为）
+# 若路由器未下发 DNS，仍具备静态解析器，避免「能 ping 通 IP、域名不通」
+# 应用：sudo cp 本文件 /etc/netplan/50-cloud-init.yaml && sudo netplan apply
+network:
+  version: 2
+  ethernets:
+    amy-dhcp:
+      match:
+        name: "en*"
+      dhcp4: true
+      dhcp4-overrides:
+        use-dns: true
+      nameservers:
+        addresses:
+          - 223.5.5.5
+          - 223.6.6.6
+          - 114.114.114.114
+          - 8.8.8.8
+          - 8.8.4.4
+      optional: true

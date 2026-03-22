@@ -5,7 +5,7 @@
 ## 运行
 
 ```bash
-cd /mnt/disk/amyclaw/openclaw-management
+cd /opt/amyclaw/openclaw-management
 node server.js
 ```
 
@@ -64,11 +64,11 @@ node server.js
 
 在开发机上改 `public/index.html`（样式、文案等）后，要**让服务从仓库目录读文件**，刷新浏览器才能看到效果。
 
-- **方式一：systemd 指向仓库（推荐）**  
-  使用仓库自带的 systemd 单元（指向 `/mnt/disk/amyclaw`），不要用 `deploy-to-opt.sh` 写出的、指向 `/opt/amyclaw` 的单元：
+- **方式一：systemd 指向本机仓库（推荐）**  
+  单元模板默认 **WorkingDirectory=/opt/amyclaw/...**。若仓库在其它路径，把该路径作为参数传给安装脚本，脚本会把单元里的 `/opt/amyclaw` 替换成你的根路径：
   ```bash
-  cd /mnt/disk/amyclaw
-  sudo openclaw-management/scripts/systemd/install-autostart.sh
+  cd /你的仓库根
+  sudo openclaw-management/scripts/systemd/install-autostart.sh /你的仓库根
   sudo systemctl restart openclaw-management
   ```
   之后改 `openclaw-management/public/index.html`，保存后**直接刷新浏览器**即可，无需重启服务（每次请求都会从磁盘读 HTML）。
@@ -76,20 +76,20 @@ node server.js
 - **方式二：前台直接跑**  
   不依赖 systemd，在仓库里直接启动，便于看日志：
   ```bash
-  cd /mnt/disk/amyclaw/openclaw-management
+  cd /opt/amyclaw/openclaw-management
   export OPENCLAW_STATE_DIR=${OPENCLAW_STATE_DIR:-/root/.openclaw}
   node server.js
   ```
   访问 `http://本机IP:8080`。若 8080 已被 systemd 占用，可先 `sudo systemctl stop openclaw-management` 或设置 `MANAGEMENT_PORT=18080` 等其它端口。
 
-若之前执行过 **scripts/deploy-to-opt.sh**，`/etc/systemd/system/openclaw-management.service` 会被写成 `WorkingDirectory=/opt/openclaw-management`，开发时需重新用 **install-autostart.sh** 装回仓库路径，或手动改 unit 的 `WorkingDirectory` 为仓库下的 `openclaw-management` 后 `systemctl daemon-reload && systemctl restart openclaw-management`。
+若之前执行过 **scripts/deploy-to-opt.sh**，`/etc/systemd/system/openclaw-management.service` 一般为 **`WorkingDirectory=/opt/amyclaw/openclaw-management`**。开发机若要从仓库热加载 `public/`，可重新执行 **install-autostart.sh** 指向你的开发仓库，或手动改 unit 的 `WorkingDirectory` 后 `systemctl daemon-reload && systemctl restart openclaw-management`。
 
 ## 量产部署到 /opt（磁盘镜像）
 
-将管理页构建并部署到 **/opt/openclaw-management**，使用正确路径与端口（默认 8080），便于做磁盘镜像与量产：
+将管理页构建并部署到 **`/opt/amyclaw/openclaw-management`**，使用正确路径与端口（默认 8080），便于做磁盘镜像与量产：
 
 ```bash
-cd /mnt/disk/amyclaw/openclaw-management
+cd /opt/amyclaw/openclaw-management
 # 可选：OPENCLAW_STATE_DIR=/opt/amyclaw/state MANAGEMENT_PORT=8080
 sudo ./scripts/deploy-to-opt.sh
 sudo systemctl enable openclaw-management.service && sudo systemctl start openclaw-management.service

@@ -12,7 +12,7 @@
 ## 安装步骤
 
 1. **修改路径（若需要）**  
-   单元内 `WorkingDirectory` 默认为 `/mnt/disk/amyclaw/...`。若你的仓库不在该路径，请先修改两个单元中的路径，或安装后用 override 覆盖：
+   单元内 `WorkingDirectory` 默认为 `/opt/amyclaw/...`。若你的仓库不在该路径，请先修改两个单元中的路径，或安装后用 override 覆盖：
 
    ```bash
    # 编辑单元中的 WorkingDirectory，或安装后：
@@ -24,25 +24,16 @@
 2. **复制单元到 systemd 目录**
 
    ```bash
-   REPO=/mnt/disk/amyclaw   # 改为你的仓库根路径
+   REPO=/opt/amyclaw   # 改为你的仓库根路径
 
    sudo cp "$REPO/openclaw/scripts/systemd/openclaw-gateway.service" /etc/systemd/system/
    sudo cp "$REPO/openclaw-management/scripts/systemd/openclaw-management.service" /etc/systemd/system/
    ```
 
-3. **若以非 root 用户运行**（推荐）  
-   在单元中指定用户，使状态目录使用该用户的 `~/.openclaw`：
+3. **若以非 root 用户运行 Gateway**（可选）  
+   在 `openclaw-gateway.service` 中指定用户，使状态目录使用该用户的 `~/.openclaw`。
 
-   ```bash
-   sudo systemctl edit openclaw-gateway.service
-   # 添加：
-   # [Service]
-   # User=你的用户名
-   # Group=你的用户名
-
-   sudo systemctl edit openclaw-management.service
-   # 同上
-   ```
+   **注意：`openclaw-management.service` 需以 root 运行**，8080 管理页的 **「修改 root / 标准用户密码」** 依赖 `chpasswd` 写 `/etc/shadow`；若给管理单元设置 `User=` 非 root，改密将失败（返回 500）。
 
 4. **重载并启用开机自启**
 
