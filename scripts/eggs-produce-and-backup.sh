@@ -11,14 +11,14 @@
 #   sudo bash /mnt/disk/amyclaw/docs/penguins-eggs/deploy-to-opt.sh
 #
 # 使用：sudo /mnt/disk/amyclaw/scripts/eggs-produce-and-backup.sh
-# 可选：AMYCLAW_IMAGE_VERSION=v2.0.6-release（默认 v2.0.6-release），备份时会额外生成带版本号的 ISO 文件名
+# 可选：AMYCLAW_IMAGE_VERSION=v2.0.7-release（默认 v2.0.7-release），备份时会额外生成带版本号的 ISO 文件名
 # 可选：EGGS_CLEAN_BEFORE_ISO=0 跳过打 ISO 前的 apt/日志/旧快照 清理
 set -euo pipefail
 
 # 必须以 root 运行
 [[ $(id -u) -eq 0 ]] || { echo "请使用 sudo 运行"; exit 1; }
 
-AMYCLAW_IMAGE_VERSION="${AMYCLAW_IMAGE_VERSION:-v2.0.6-release}"
+AMYCLAW_IMAGE_VERSION="${AMYCLAW_IMAGE_VERSION:-v2.0.7-release}"
 BACKUP_DIR="/mnt/backup"
 SNAPSHOT_DIR="${SNAPSHOT_DIR:-/var/tmp/eggs}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

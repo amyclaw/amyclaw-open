@@ -1,6 +1,6 @@
 {
   "name": "openclaw-management",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "OpenClaw 量产管理页：8080 端口设置 Token、配置与升级预留",
   "type": "module",
   "main": "server.js",

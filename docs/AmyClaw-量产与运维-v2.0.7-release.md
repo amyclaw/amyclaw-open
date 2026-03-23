@@ -1,6 +1,4 @@
-# AmyClaw 量产与运维说明 v2.0.1
-
-> **已发布 v2.0.7-release**：请以 **`AmyClaw-量产与运维-v2.0.7-release.md`** 与镜像 **`AMYCLAW_IMAGE_VERSION=v2.0.7-release`** 为准；本文保留作历史对照。
+# AmyClaw 量产与运维说明 v2.0.7-release
 
 > **定位**：面向**运维/集成人员**的精简版总览。详细参数、排错与历史说明仍以现有文档为准（见文末「相关文档」），**本文不替代** `eggs-量产克隆与使用说明.md`。
 
@@ -11,8 +9,8 @@
 | 项目 | 说明 |
 |------|------|
 | **ISO** | 母机执行 `eggs-produce-and-backup.sh` 后，在 **`/mnt/backup/`** 可得到 eggs 默认名 + **`amyclaw_<版本>_amd64_<时间戳>.iso`**（内容相同，后者便于版本管理）。 |
-| **版本号** | 环境变量 **`AMYCLAW_IMAGE_VERSION`**（当前量产默认 **`v2.0.1`**），写入 **`/etc/amyclaw-release`** 后打入镜像。 |
-| **克隆后系统用户** | 默认 **`amyclaw`** / **`amyclaw20260315`**；**root** 同密码（以母机当时 Krill/OEM 为准）。 |
+| **版本号** | 环境变量 **`AMYCLAW_IMAGE_VERSION`**（当前量产默认 **`v2.0.7-release`**），写入 **`/etc/amyclaw-release`** 后打入镜像。 |
+| **克隆后系统用户** | 默认 **`amyclaw`** / **`amyclaw20260315`**；**root** 同密码（以母机当时 Krill/OEM 为准）。**`amyclaw` 须在 `sudo` 组**（`set-oem-system-passwords.sh` 已自动处理）；旧镜像若无 sudo，见 **`eggs-量产克隆与使用说明.md`**「现场被锁」小节。 |
 
 ---
 
@@ -44,10 +42,12 @@
 1. **`mother-image-prepare-for-amyclaw-iso.sh`** — 主机名、DHCP、Krill/eggs 凭证等。  
 2. **`openclaw` 内 `pnpm build`** → **`deploy-to-opt.sh`** — 运行时代码与 **`/opt/amyclaw/oem/`**（含自检脚本等）。  
 3. **`apply-netplan-dhcp-oem.sh`**（按需）。  
-4. 写入 **`/etc/amyclaw-release`**（可选）。  
-5. **`eggs-produce-and-backup.sh`** — 生成 ISO。  
+4. 写入 **`/etc/amyclaw-release`**（可选，建议 **`AMYCLAW_IMAGE_VERSION=v2.0.7-release`**）。  
+5. **`eggs-produce-and-backup.sh`** — 生成 ISO（默认会执行 **apt clean / journal 裁剪 / 清理 eggs 快照目录内旧 ISO**，可用 **`EGGS_CLEAN_BEFORE_ISO=0`** 跳过）。  
 
 （完整命令块见 **`eggs-量产克隆与使用说明.md`** 第二节。）
+
+**一键打 ISO（推荐）**：`sudo bash /mnt/disk/amyclaw/scripts/make-amyclaw-iso-v2.0.7-release.sh`（内部写入 `/etc/amyclaw-release` 并调用 `eggs-produce-and-backup.sh`）。
 
 ---
 
@@ -84,7 +84,7 @@
 - **每台量产机 / 每个独立环境**使用**独立飞书应用**（至少独立 **测试应用**），与生产应用分离。  
 - 若仅有一台设备，**换环境前**在开放平台侧**禁用旧连接**或**先停掉另一台网关**，避免双活抢同一应用事件。  
 
-（用户侧简要说明见 **`AmyClaw-用户安装后使用说明-v2.0-release.md`**；飞书端注册与权限见 **`飞书-开放平台注册应用与机器人指南.md`**。）
+（用户侧简要说明见 **`AmyClaw-用户安装后使用说明-v2.0.7-release.md`**；飞书端注册与权限见 **`飞书-开放平台注册应用与机器人指南.md`**。）
 
 ### 5.5 Ubuntu 下查询本机 IP（现场）
 
@@ -105,16 +105,44 @@
 
 ---
 
-## 6. 相关文档（不覆盖、互为补充）
+## 6. v2.0.7-release 相对 v2.0.6-release 的变更摘要（运维与管理页相关）
+
+| 项 | 说明 |
+|------|------|
+| **版本号与文档** | 默认 **`AMYCLAW_IMAGE_VERSION=v2.0.7-release`**；管理端 **`package.json`** 为 **`2.0.7`**；姊妹篇以 **`v2.0.7-release`** 文件名为准。 |
+| **OEM 密码** | **root** 与 **`amyclaw`** 默认密码仍为 **`amyclaw20260315`**（`set-oem-system-passwords.sh`、`eggs-dad-example.yaml`、`krill-amyclaw.yaml` 一致）；打 ISO 前执行 OEM 脚本可确保 **`/etc/shadow`** 与镜像一致。 |
+
+---
+
+## 7. v2.0.6-release 相对 v2.0.3 的变更摘要（运维与管理页相关）
+
+| 项 | 说明 |
+|------|------|
+| **idatabase 模型列表** | 主模型与向量（记忆）模型**分流**拉取；服务端按模型 id 启发式区分 chat / embedding；**记忆区未填 Key 时**与主模型同 Key 拉取列表，避免列表为空或与主模型不一致。 |
+| **保存与刷新** | 保存配置后**不**再用「仅配置一条」覆盖用户已拉取的**完整下拉**；**刷新浏览器**后仅展示**已保存的选中项**，完整列表需用户手动点击「获取模型列表 / 获取可用模型」。 |
+| **版本号与文档** | 默认 **`AMYCLAW_IMAGE_VERSION=v2.0.6-release`**；管理页展示 **`v2.0.6-release`**；姊妹篇以 **`v2.0.6-release`** 文件名为准。 |
+
+---
+
+## 8. v2.0.3 相对 v2.0.2 的变更摘要（历史）
+
+| 项 | 说明 |
+|------|------|
+| **OEM / sudo** | `set-oem-system-passwords.sh` 将 **`amyclaw` 加入 `sudo` 组**（v2.0.2 及更早若未执行该更新，克隆机可能无 sudo）；现场恢复见 **`eggs-量产克隆与使用说明.md`**「现场被锁」。 |
+| **版本号与文档** | 默认 **`AMYCLAW_IMAGE_VERSION=v2.0.3`**；姊妹篇文件名曾为 **v2.0.3**（详见 **`AmyClaw-量产与运维-v2.0.3.md`**）。 |
+
+---
+
+## 9. 相关文档（不覆盖、互为补充）
 
 | 文档 | 内容 |
 |------|------|
 | `eggs-量产克隆与使用说明.md` | 打包、刻录、克隆、手工安装、技术表、脚本路径。 |
 | `热加载与无回复排查.md` | 热加载、飞书链路、插件条目、大模型 Key。 |
 | `penguins-eggs/全新机器恢复完整指南.md` | 恢复机与网关/管理端联调。 |
-| `AmyClaw-用户安装后使用说明-v2.0-release.md` | **终端用户**：仅安装后设置与使用。 |
+| `AmyClaw-用户安装后使用说明-v2.0.7-release.md` | **终端用户**：仅安装后设置与使用。 |
 | `飞书-开放平台注册应用与机器人指南.md` | **飞书端**：注册应用与机器人。 |
 
 ---
 
-*文档版本：v2.0.1 · 与镜像 `AMYCLAW_IMAGE_VERSION` 及仓库内其它文档并列维护*
+*文档版本：v2.0.7-release · 与镜像 `AMYCLAW_IMAGE_VERSION` 及仓库内其它文档并列维护*
