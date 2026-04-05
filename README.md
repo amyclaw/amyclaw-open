@@ -1,11 +1,11 @@
 # AmyClaw Universal Deployment (V2.11)
 
 <p align="center">
-  <img src="https://drive.google.com/thumbnail?id=1bV1KN5V9o24qiWYLzoifmIVZbMkRbod_&sz=w1600" alt="AmyClaw Architecture Overview" width="800">
+  <img src="https://github.com/amyclaw/amyclaw-open/blob/main/docs/AMYCLAW_UI_CN.png" alt="AmyClaw Architecture Overview" width="800">
 </p>
 
 <p align="center">
-  <img src="https://drive.google.com/thumbnail?id=1XDeCiLVchQp_TcfwLOCufXcznG16hX8V&sz=w1600" alt="AmyClaw Interface Screenshot" width="800">
+  <img src="https://github.com/amyclaw/amyclaw-open/blob/main/docs/AMYCLAW_UI.png" alt="AmyClaw Interface Screenshot" width="800">
 </p>
 
 ---
