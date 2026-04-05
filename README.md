@@ -1,8 +1,14 @@
 # AmyClaw Universal Deployment (V2.11)
 
 <p align="center">
-  <img src="https://drive.google.com/thumbnail?id=1XDeCiLVchQp_TcfwLOCufXcznG16hX8V&sz=w800" alt="AmyClaw Interface" width="600">
+  <img src="https://drive.google.com/thumbnail?id=1bV1KN5V9o24qiWYLzoifmIVZbMkRbod_&sz=w1600" alt="AmyClaw Architecture Overview" width="800">
 </p>
+
+<p align="center">
+  <img src="https://drive.google.com/thumbnail?id=1XDeCiLVchQp_TcfwLOCufXcznG16hX8V&sz=w800" alt="AmyClaw Interface Screenshot" width="400">
+</p>
+
+---
 
 AmyClaw is a pre-optimized, one-click installation image designed for standard x86 architecture. It serves as a stable, always-on AI gateway, supporting automated deployment and seamless integration with major IM platforms (Feishu/Lark, WhatsApp, etc.) and LLMs.
 
