@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://drive.google.com/thumbnail?id=1XDeCiLVchQp_TcfwLOCufXcznG16hX8V&sz=w800" alt="AmyClaw Interface Screenshot" width="400">
+  <img src="https://drive.google.com/thumbnail?id=1XDeCiLVchQp_TcfwLOCufXcznG16hX8V&sz=w1600" alt="AmyClaw Interface Screenshot" width="800">
 </p>
 
 ---
