@@ -1,9 +1,8 @@
 # AmyClaw Universal Deployment (V2.11)
 
 ## 💻Ready in 5 Minutes: Download ISO -> Flash -> Boot -> sudo eggs krill
-##  https://drive.google.com/drive/folders/1TbjFvQww2ywSMKaiHlxj34Mwj9CGI4BA?usp=drive_link
-##  
-
+## 🚀https://drive.google.com/drive/folders/1TbjFvQww2ywSMKaiHlxj34Mwj9CGI4BA?usp=drive_link
+## 🚀https://www.123912.com/s/46glvd-ggQGA
 <p align="center">
   <img src="https://github.com/amyclaw/amyclaw-open/blob/main/docs/AMYCLAW_UI_CN.png" alt="AmyClaw Architecture Overview" width="800">
 </p>
